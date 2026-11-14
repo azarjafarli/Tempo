@@ -10,7 +10,7 @@ export function MetricTable({ metrics, persistence }: { metrics: MetricResult[];
       <table className="w-full min-w-[640px] text-sm">
         <caption className="sr-only">Comparison of the evaluated session with this person's baseline</caption>
         <thead>
-          <tr className="text-left text-[11px] uppercase tracking-wider text-faint">
+          <tr className="text-left text-[11px] text-faint">
             <th className="pb-2 font-normal">Metric</th>
             <th className="pb-2 font-normal">Evaluated</th>
             <th className="pb-2 font-normal">Baseline median</th>
@@ -30,13 +30,13 @@ export function MetricTable({ metrics, persistence }: { metrics: MetricResult[];
                   {m.label}
                   <div className="text-[11px] text-faint">{m.adverse_direction === "up" ? "higher = adverse" : "lower = adverse"}</div>
                 </td>
-                <td className="py-2.5 pr-3 font-mono">{fmt(m.value, d, u)}</td>
-                <td className="py-2.5 pr-3 font-mono text-dim">{fmt(m.baseline.median, d, u)}<div className="text-[11px] text-faint">n={m.baseline.n} · {m.baseline.status}</div></td>
-                <td className="py-2.5 pr-3 font-mono text-dim">{fmt(m.baseline.mad, d)}{m.baseline.zero_variance && <div className="text-[11px] text-amber">zero spread → floor</div>}</td>
-                <td className={cx("py-2.5 pr-3 font-mono", m.flagged ? "text-amber" : "text-ink")}>
+                <td className="py-2.5 pr-3 font-cond tnum">{fmt(m.value, d, u)}</td>
+                <td className="py-2.5 pr-3 font-cond tnum text-dim">{fmt(m.baseline.median, d, u)}<div className="text-[11px] text-faint">n={m.baseline.n} · {m.baseline.status}</div></td>
+                <td className="py-2.5 pr-3 font-cond tnum text-dim">{fmt(m.baseline.mad, d)}{m.baseline.zero_variance && <div className="text-[11px] text-amber">zero spread → floor</div>}</td>
+                <td className={cx("py-2.5 pr-3 font-cond tnum", m.flagged ? "text-amber" : "text-ink")}>
                   {signed(m.difference, d)}{m.percent_difference != null && <span className="text-[11px] text-faint"> ({signed(m.percent_difference, 0)}%)</span>}
                 </td>
-                <td className={cx("py-2.5 pr-3 font-mono", m.flagged ? "text-amber" : "text-dim")}>{signed(m.robust_z, 1)}</td>
+                <td className={cx("py-2.5 pr-3 font-cond tnum", m.flagged ? "text-amber" : "text-dim")}>{signed(m.robust_z, 1)}</td>
                 <td className="py-2.5">
                   <CategoryBadge category={m.category} small />
                   {persistence && (persistence[m.metric] ?? 0) > 1 && <div className="mt-1 text-[11px] text-amber">flagged in {persistence[m.metric]} consecutive sessions</div>}

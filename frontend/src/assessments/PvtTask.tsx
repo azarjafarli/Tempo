@@ -215,7 +215,7 @@ export default function PvtTask({ crewId, phase, onSaved }: Props) {
   return (
     <div className="space-y-5">
       <Card title="Vigilant attention · reaction-time task" icon={<Keyboard size={15} />}
-        subtitle="Press SPACE as soon as the amber target appears. Inspired by NASA’s Psychomotor Vigilance Test — this is NOT the validated NASA PVT instrument.">
+        subtitle="Press Space as soon as the orange target appears. Inspired by NASA’s Psychomotor Vigilance Test — this is NOT the validated NASA PVT instrument.">
         <div className="flex flex-wrap items-end gap-4">
           <Select label="Mode" value={mode} onChange={setMode}
             options={(Object.keys(PVT_MODES) as PvtMode[]).map((k) => ({ value: k, label: PVT_MODES[k].label }))} />
@@ -232,20 +232,20 @@ export default function PvtTask({ crewId, phase, onSaved }: Props) {
           aria-live="polite" aria-label="Reaction time task area">
           {state === "idle" && (
             <div className="max-w-md text-center text-sm text-dim">
-              <p className="text-ink">Sit comfortably, keep one finger on the <kbd className="rounded border border-line bg-panel2 px-1.5 font-mono">Space</kbd> bar and look at the centre.</p>
+              <p className="text-ink">Sit comfortably, keep one finger on the <kbd className="rounded border border-line bg-panel2 px-1.5 font-cond tnum">Space</kbd> bar and look at the centre.</p>
               <p className="mt-2">Respond as fast as you can each time the target appears. Don’t press before it appears. Switching tabs or windows invalidates the run.</p>
             </div>
           )}
-          {state === "countdown" && <div className="font-mono text-6xl font-bold text-cyan">{count}</div>}
+          {state === "countdown" && <div className="font-cond tnum text-6xl font-bold text-cyan">{count}</div>}
           {(state === "running") && (
             <>
               <div ref={stim} data-on="0" className="grid h-36 w-36 place-items-center rounded-full border-4 border-amber bg-amber/15 opacity-0 data-[on='1']:opacity-100">
-                <span ref={counter} className="font-mono text-3xl font-bold text-amber">0</span>
+                <span ref={counter} className="font-cond tnum text-3xl font-bold text-amber">0</span>
               </div>
-              <div className="absolute left-4 top-3 font-mono text-xs text-faint">{elapsed.toFixed(0)} / {cfg.durationS} s</div>
-              <div className="absolute right-4 top-3 font-mono text-xs text-faint">{trials.current.filter((t) => t.kind === "response").length} responses</div>
+              <div className="absolute left-4 top-3 font-cond tnum text-xs text-faint">{elapsed.toFixed(0)} / {cfg.durationS} s</div>
+              <div className="absolute right-4 top-3 font-cond tnum text-xs text-faint">{trials.current.filter((t) => t.kind === "response").length} responses</div>
               <div className="absolute bottom-0 left-0 h-1 bg-cyan/60 transition-all" style={{ width: `${Math.min(100, (elapsed / cfg.durationS) * 100)}%` }} />
-              {feedback && <div className={cx("absolute bottom-4 font-mono text-sm", feedback.tone === "ok" ? "text-cyan" : "text-amber")}>{feedback.text}</div>}
+              {feedback && <div className={cx("absolute bottom-4 font-cond tnum text-sm", feedback.tone === "ok" ? "text-cyan" : "text-amber")}>{feedback.text}</div>}
             </>
           )}
           {state === "saving" && <div className="text-sm text-dim">Saving raw trials and running baseline comparison…</div>}
@@ -261,8 +261,8 @@ export default function PvtTask({ crewId, phase, onSaved }: Props) {
           )}
           {state === "done" && result && (
             <div className="text-center">
-              <div className="text-xs uppercase tracking-[0.14em] text-faint">Median reaction time</div>
-              <div className="font-mono text-5xl font-bold text-cyan">{fmt(result.session.summary.median_rt_ms as number, 0)}<span className="text-xl text-faint"> ms</span></div>
+              <div className="text-xs text-faint">Median reaction time</div>
+              <div className="font-cond tnum text-5xl font-bold text-cyan">{fmt(result.session.summary.median_rt_ms as number, 0)}<span className="text-xl text-faint"> ms</span></div>
               <div className="mt-1 text-xs text-dim">Saved as session #{result.session.id} · real local measurement · status: {result.session.status}</div>
             </div>
           )}

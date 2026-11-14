@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarClock, ClipboardCheck, Database, ListChecks, Moon, Timer, User } from "lucide-react";
+import { ClipboardCheck, Database, ListChecks, Moon, Timer, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CartesianGrid, ComposedChart, Line, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from "recharts";
 import { Button, Card, CategoryBadge, chartTheme, cx, DemoScenarioBanner, Loading, Notice, ProvenanceBadge, SelfReportedTag, Stat } from "../components/ui";
@@ -23,40 +23,41 @@ export default function MissionOverview() {
   const { mission, crew } = data;
   const synthetic = crew.provenance === "synthetic";
 
+  const { headline, detail } = statusText(data);
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-cyan">Mission Overview</p>
-          <h1 className="mt-1 text-2xl font-semibold text-ink">{crew.display_name}</h1>
-          <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-dim">
-            <User size={14} aria-hidden /> {crew.role} <ProvenanceBadge p={crew.provenance} />
-            {crew.qualifications.length > 0 && <span className="text-faint">· {crew.qualifications.join(" · ")}</span>}
-          </p>
+    <div className="space-y-8">
+      <section aria-labelledby="status-headline">
+        <div className="flex flex-wrap items-start justify-between gap-6">
+          <div className="max-w-[860px]">
+            <p className="flex flex-wrap items-center gap-2 text-[14px] text-dim">
+              <User size={15} aria-hidden /> {crew.display_name}, {crew.role.replace(" · ", ", ")}
+              <ProvenanceBadge p={crew.provenance} />
+            </p>
+            <h1 id="status-headline" className="mt-2 font-cond text-[44px] font-bold leading-[1.02] text-ink md:text-[52px]">{headline}</h1>
+            <p className="mt-3 max-w-[68ch] text-[16px] leading-relaxed text-dim">{detail}</p>
+          </div>
+          <Button variant="primary" onClick={() => navigate("lab")}>Run an assessment</Button>
         </div>
-        <Button variant="primary" onClick={() => navigate("lab")}>Run an assessment <ArrowRight size={16} /></Button>
-      </div>
 
-      {synthetic ? (
-        <DemoScenarioBanner text={`Fictional crew member and mission. Assessment histories are simulated (${mission.scenario_profile}-performance profile, seed ${mission.random_seed}).`} />
-      ) : (
-        <Notice>
-          This profile holds <strong>real measurements recorded on this computer</strong>. It is not part of the fictional mission schedule;
-          mission fields below refer to the demo mission timeline.
-        </Notice>
-      )}
-
-      <Card>
-        <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
-          <Stat label="Current mission day" value={<>{mission.current_day}<span className="text-base text-faint"> / {mission.num_days}</span></>} sub={mission.name} accent="cyan" />
-          <Stat label="Last EVA" value={data.last_eva ? hoursToHM(data.last_eva.duration_hours) : "—"}
-            sub={data.last_eva ? `EVA ${data.last_eva.eva_number} · Day ${data.last_eva.mission_day} · with ${data.last_eva.crew.filter((c) => c !== crew.code).join(", ")}` : "No completed EVA"} />
-          <Stat label="Next scheduled EVA" value={data.next_eva ? `Day ${data.next_eva.mission_day}` : "—"}
-            sub={data.next_eva ? `EVA ${data.next_eva.eva_number} · ${hhmm(data.next_eva.start_hour)} · planned ${hoursToHM(data.next_eva.duration_hours)}` : "None planned"} accent="amber" />
-          <Stat label="EVAs (this crew member)" value={`${data.eva_count.completed + data.eva_count.planned}`} sub={`${data.eva_count.completed} completed · ${data.eva_count.planned} planned`} />
+        <div className="mt-7">
+          {synthetic ? (
+            <DemoScenarioBanner text={`The crew member, mission and assessment histories are fictional, generated from seed ${mission.random_seed}.`} />
+          ) : (
+            <Notice>This profile holds real measurements recorded on this computer. It is not part of the fictional mission schedule.</Notice>
+          )}
         </div>
-        <MissionTimeline data={data} />
-      </Card>
+
+        <MissionStrip data={data} />
+
+        <dl className="mt-6 grid grid-cols-2 gap-y-5 border-t border-line pt-5 lg:grid-cols-4 lg:divide-x lg:divide-line">
+          <div className="pr-6"><Stat label="Last EVA" value={data.last_eva ? hoursToHM(data.last_eva.duration_hours) : "None yet"}
+            sub={data.last_eva ? `EVA ${data.last_eva.eva_number} on day ${data.last_eva.mission_day}, with ${data.last_eva.crew.filter((c) => c !== crew.code).join(" and ")}` : "No completed EVA"} /></div>
+          <div className="lg:px-6"><Stat label="Next EVA" value={data.next_eva ? `Day ${data.next_eva.mission_day}, ${hhmm(data.next_eva.start_hour)}` : "None planned"} accent={data.next_eva ? "amber" : undefined}
+            sub={data.next_eva ? `EVA ${data.next_eva.eva_number}, planned for ${hoursToHM(data.next_eva.duration_hours)}` : undefined} /></div>
+          <div className="lg:px-6"><Stat label="EVAs for this crew member" value={`${data.eva_count.completed} of ${data.eva_count.completed + data.eva_count.planned}`} sub="completed so far" /></div>
+          <div className="lg:pl-6"><Stat label="Mission" value={`Day ${mission.current_day} of ${mission.num_days}`} sub={mission.name} /></div>
+        </dl>
+      </section>
 
       <div className="grid gap-6 xl:grid-cols-2">
         {(["pvt", "motor"] as const).map((k) => (
@@ -68,7 +69,7 @@ export default function MissionOverview() {
         <Card title="Next steps" icon={<ListChecks size={15} />} className="lg:col-span-1">
           <ol className="space-y-2.5 text-sm text-ink">
             {data.next_steps.map((s, i) => (
-              <li key={i} className="flex gap-2.5"><span className="mt-0.5 font-mono text-xs text-cyan">{String(i + 1).padStart(2, "0")}</span><span>{s}</span></li>
+              <li key={i} className="flex gap-2.5"><span className="mt-0.5 font-cond tnum text-xs text-cyan">{String(i + 1).padStart(2, "0")}</span><span>{s}</span></li>
             ))}
           </ol>
           <p className="mt-4 text-xs text-faint">Suggestions come from documented exploratory rules. They are prompts for human review, not medical advice.</p>
@@ -77,14 +78,14 @@ export default function MissionOverview() {
         <Card title="Assessment data quality" icon={<Database size={15} />}>
           <table className="w-full text-sm">
             <caption className="sr-only">Data quality per assessment</caption>
-            <thead><tr className="text-left text-[11px] uppercase tracking-wider text-faint"><th className="pb-2 font-normal">Assessment</th><th className="pb-2 font-normal">Sessions</th><th className="pb-2 font-normal">Invalid</th><th className="pb-2 font-normal">Baseline</th></tr></thead>
+            <thead><tr className="text-left text-[11px] text-faint"><th className="pb-2 font-normal">Assessment</th><th className="pb-2 font-normal">Sessions</th><th className="pb-2 font-normal">Invalid</th><th className="pb-2 font-normal">Baseline</th></tr></thead>
             <tbody>
               {data.data_quality.map((q) => (
                 <tr key={q.assessment} className="border-t border-line/60">
                   <td className="py-2 text-ink">{q.assessment}</td>
-                  <td className="py-2 font-mono">{q.sessions}</td>
-                  <td className={cx("py-2 font-mono", q.invalid_or_incomplete ? "text-rose" : "text-dim")}>{q.invalid_or_incomplete}</td>
-                  <td className="py-2"><span className={cx("font-mono text-xs", q.baseline_status === "established" ? "text-jade" : q.baseline_status === "provisional" ? "text-amber" : "text-faint")}>{q.baseline_status}</span> <span className="text-xs text-faint">(n={q.valid_baseline_sessions})</span></td>
+                  <td className="py-2 font-cond tnum">{q.sessions}</td>
+                  <td className={cx("py-2 font-cond tnum", q.invalid_or_incomplete ? "text-rose" : "text-dim")}>{q.invalid_or_incomplete}</td>
+                  <td className="py-2"><span className={cx("font-cond tnum text-xs", q.baseline_status === "established" ? "text-jade" : q.baseline_status === "provisional" ? "text-amber" : "text-faint")}>{q.baseline_status}</span> <span className="text-xs text-faint">(n={q.valid_baseline_sessions})</span></td>
                 </tr>
               ))}
             </tbody>
@@ -111,38 +112,79 @@ export default function MissionOverview() {
   );
 }
 
-function MissionTimeline({ data }: { data: Overview }) {
+function statusText(data: Overview): { headline: string; detail: string } {
+  const who = data.crew.code === "LOCAL" ? "You" : data.crew.code;
+  const a = Object.values(data.assessments);
+  const review = a.filter((x) => x.category === "change_worth_reviewing");
+  const next = data.next_eva;
+  const parts = a.filter((x) => x.key_metric_result?.value != null && x.key_metric_result.baseline.median != null).map((x) => {
+    const r = x.key_metric_result!;
+    const what = x.key_metric === "median_rt_ms" ? "Median reaction time" : "Median movement time";
+    return `${what} was ${Math.round(r.value!)} ms against a baseline of ${Math.round(r.baseline.median!)} ms`;
+  });
+  const detailBase = parts.length ? `${parts.map((x, i) => (i ? x.charAt(0).toLowerCase() + x.slice(1) : x)).join("; ")}.` : "";
+  if (review.length) {
+    const n = review.length === 1 ? "One functional change" : `${review.length === 2 ? "Two" : review.length} functional changes`;
+    return {
+      headline: `${who}: ${n.toLowerCase().replace(/^./, (c) => c.toUpperCase())} worth reviewing${next ? ` before EVA ${next.eva_number}` : ""}.`,
+      detail: `${detailBase} These exceed the exploratory flagging rules, so a qualified reviewer should look at them${next ? ` before day ${next.mission_day} at ${hhmm(next.start_hour)}` : ""}. This is not a diagnosis.`,
+    };
+  }
+  if (a.some((x) => x.category === "invalid_measurement")) return { headline: `${who}: the latest run is invalid and needs repeating.`, detail: "Invalid runs are kept for audit but never interpreted." };
+  if (a.every((x) => x.category === "insufficient_data")) return { headline: `${who}: building a personal baseline.`, detail: "Record at least three baseline sessions per assessment before results are compared." };
+  return { headline: `${who}: results are within observed baseline variation.`, detail: `${detailBase} No metric met the exploratory flagging rules.` };
+}
+
+const H0 = 6, H1 = 20;
+
+/** Five-day EVA strip drawn to scale: one row per crew member, bars from start to end of each EVA. */
+function MissionStrip({ data }: { data: Overview }) {
   const m = data.mission!;
   const days = Array.from({ length: m.num_days }, (_, i) => i + 1);
+  const crewCodes = Array.from(new Set(data.all_evas.flatMap((e) => e.crew)));
+  if (!crewCodes.length) return null;
+  const nowHour = 7.2;
+  const pct = (h: number) => ((h - H0) / (H1 - H0)) * 100;
   return (
-    <div className="mt-6" aria-label="Mission EVA timeline">
-      <div className="mb-2 flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-faint"><CalendarClock size={13} aria-hidden /> Five-day EVA timeline</div>
-      <div className="grid grid-cols-5 gap-2">
-        {days.map((d) => {
-          const evas = data.all_evas.filter((e) => e.mission_day === d);
-          const isToday = d === m.current_day;
+    <figure className="mt-7" aria-label="Five-day EVA timeline">
+      <div className="grid gap-x-1.5" style={{ gridTemplateColumns: `64px repeat(${m.num_days}, minmax(0,1fr))` }}>
+        <div />
+        {days.map((d) => (
+          <div key={d} className={cx("pb-2 font-cond text-[15px]", d === m.current_day ? "font-bold text-ink" : d < m.current_day ? "text-faint" : "text-dim")}>
+            Day {d}{d === m.current_day && <span className="ml-1.5 font-semibold text-amber">today</span>}
+          </div>
+        ))}
+        {crewCodes.map((c) => {
+          const me = c === data.crew.code;
           return (
-            <div key={d} className={cx("rounded-lg border p-2.5", isToday ? "border-cyan/60 bg-cyan-deep/25" : "border-line bg-deck/60")}>
-              <div className="flex items-center justify-between font-mono text-[11px] text-dim">
-                <span>DAY {d}</span>{isToday && <span className="text-cyan">TODAY</span>}
-              </div>
-              {evas.length === 0 && <div className="mt-2 text-xs text-faint">No EVA</div>}
-              {evas.map((e) => {
-                const mine = e.crew.includes(data.crew.code);
-                return (
-                  <div key={e.id} className={cx("mt-2 rounded-md border px-2 py-1.5 text-xs",
-                    mine ? (e.status === "completed" ? "border-cyan/40 bg-cyan-deep/40 text-cyan" : "border-amber/40 bg-amber-deep/40 text-amber") : "border-line text-faint")}>
-                    <div className="font-semibold">EVA {e.eva_number} · {e.status}</div>
-                    <div className="font-mono text-[11px] opacity-80">{hhmm(e.start_hour)} · {e.duration_hours.toFixed(1)} h</div>
-                    <div className="truncate text-[11px] opacity-80">{e.crew.join(" + ")}</div>
-                  </div>
-                );
-              })}
+            <div key={c} className="contents">
+              <div className={cx("flex items-center font-cond text-[15px]", me ? "font-bold text-ink" : "text-faint")}>{c}</div>
+              {days.map((d) => (
+                <div key={d} className={cx("relative h-9 border-t border-line", d < m.current_day ? "bg-panel2/60" : "bg-panel")}>
+                  {data.all_evas.filter((e) => e.mission_day === d && e.crew.includes(c)).map((e) => (
+                    <div key={e.id} title={`EVA ${e.eva_number}: ${hhmm(e.start_hour)}–${hhmm(e.start_hour + e.duration_hours)}, ${e.crew.join(" and ")}, ${e.status}`}
+                      className={cx("absolute top-1.5 bottom-1.5 flex items-center overflow-hidden rounded-[3px] px-1.5 font-cond text-[12.5px] font-semibold",
+                        e.status === "completed"
+                          ? me ? "bg-ink text-white" : "bg-[#AEB6BC] text-white"
+                          : me ? "border-2 border-ink bg-panel text-ink" : "border border-dashed border-[#AEB6BC] text-faint")}
+                      style={{ left: `${pct(e.start_hour)}%`, width: `${(e.duration_hours / (H1 - H0)) * 100}%` }}>
+                      EVA {e.eva_number}
+                    </div>
+                  ))}
+                  {d === m.current_day && <div className="absolute top-0 bottom-0 w-[2px] bg-amber" style={{ left: `${pct(nowHour)}%` }} aria-hidden />}
+                </div>
+              ))}
             </div>
           );
         })}
       </div>
-    </div>
+      <figcaption className="mt-2 flex flex-wrap gap-x-5 gap-y-1 pl-[70px] text-[12.5px] text-faint">
+        <span><span className="mr-1.5 inline-block h-2.5 w-4 rounded-[2px] bg-ink align-middle" />Completed</span>
+        <span><span className="mr-1.5 inline-block h-2.5 w-4 rounded-[2px] border-2 border-ink align-middle" />Planned</span>
+        <span><span className="mr-1.5 inline-block h-3 w-[2px] bg-amber align-middle" />Now</span>
+        <span>Each day spans {String(H0).padStart(2, "0")}:00 to {H1}:00</span>
+      </figcaption>
+    </figure>
   );
 }
 
@@ -175,15 +217,15 @@ function AssessmentCard({ a, type, onOpen }: { a: OverviewAssessment; type: "pvt
             <Scatter dataKey="value" isAnimationActive={false}
               shape={(p: { cx?: number; cy?: number; payload?: { phase: string; status: string } }) => (
                 <circle cx={p.cx} cy={p.cy} r={4.5}
-                  fill={p.payload?.status !== "valid" ? chartTheme.rose : p.payload?.phase === "baseline" ? chartTheme.cyan : chartTheme.amber}
-                  stroke="#050b16" strokeWidth={1.5} />
+                  fill={p.payload?.status !== "valid" ? chartTheme.rose : p.payload?.phase === "baseline" ? chartTheme.cyan : "#1D2227"}
+                  stroke="#ffffff" strokeWidth={1.5} />
               )} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-faint">
         <span><span className="mr-1 inline-block h-2 w-2 rounded-full bg-cyan" />baseline</span>
-        <span><span className="mr-1 inline-block h-2 w-2 rounded-full bg-amber" />mission</span>
+        <span><span className="mr-1 inline-block h-2 w-2 rounded-full bg-ink" />mission</span>
         <span><span className="mr-1 inline-block h-2 w-2 rounded-full bg-rose" />invalid (not interpreted)</span>
         <span>shaded: baseline median ± 3 robust SD</span>
       </div>
@@ -195,7 +237,7 @@ function AssessmentCard({ a, type, onOpen }: { a: OverviewAssessment; type: "pvt
       )}
       {a.flagged_metrics.length > 0 && <p className="mt-2 text-xs text-amber">Flagged: {a.flagged_metrics.join(", ")}</p>}
       {a.warnings.map((w) => <p key={w} className="mt-2 text-xs text-amber">{w}</p>)}
-      <div className="mt-4"><Button variant="ghost" onClick={onOpen}>Open Recovery Analysis <ArrowRight size={15} /></Button></div>
+      <div className="mt-4"><Button variant="ghost" onClick={onOpen}>Open recovery analysis</Button></div>
     </Card>
   );
 }

@@ -1,13 +1,20 @@
 @echo off
-rem EVA RECOVERY - one-click launcher: runs setup the first time, then starts the app.
+rem EVA RECOVERY - one-click launcher: runs setup when needed, then starts the app.
 cd /d "%~dp0"
 if not exist "backend\.venv\Scripts\python.exe" (
   echo First run: installing dependencies, this takes a few minutes...
   powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0setup.ps1"
   if errorlevel 1 ( echo Setup failed - see messages above. & pause & exit /b 1 )
 )
-if not exist "frontend\dist\index.html" (
-  powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0setup.ps1"
+rem Rebuild the interface whenever its source has changed (marker file records the build version).
+if not exist "frontend\dist\.build-v2" (
+  echo Building the interface...
+  pushd frontend
+  call npm install
+  call npm run build
+  if errorlevel 1 ( popd & echo Frontend build failed - see messages above. & pause & exit /b 1 )
+  echo v2> dist\.build-v2
+  popd
 )
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0start.ps1"
 pause

@@ -57,8 +57,8 @@ export default function Research() {
   return (
     <div className="space-y-5">
       <div>
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-cyan">Research & Data Sources</p>
-        <h1 className="mt-1 flex items-center gap-2 text-2xl font-semibold"><BookOpen className="text-cyan" size={22} /> Evidence, provenance and limitations</h1>
+        <h1 className="font-cond text-[40px] font-bold leading-[1.05] text-ink">Sources, data and limits</h1>
+        <p className="mt-1.5 max-w-[68ch] text-[15.5px] text-dim">Where every number in this app comes from, what each NASA source supports, and what the prototype cannot tell you.</p>
       </div>
 
       <Card title="NASA historical EVA dataset · import workflow" icon={<Database size={15} />} actions={<ProvenanceBadge p="nasa_public_data" long />}
@@ -82,22 +82,22 @@ export default function Research() {
                 </div>
                 <div className="grid gap-4 text-xs text-dim md:grid-cols-2">
                   <div className="rounded-lg border border-line bg-deck/60 p-3">
-                    <div className="mb-1 text-[11px] uppercase tracking-wider text-faint">Source & integrity</div>
-                    <div>File: <span className="font-mono text-ink">{imp.filename}</span></div>
+                    <div className="mb-1 text-[11px] text-faint">Source & integrity</div>
+                    <div>File: <span className="font-cond tnum text-ink">{imp.filename}</span></div>
                     <div>Imported: {new Date(imp.imported_at).toLocaleString()}</div>
-                    <div className="break-all">SHA-256: <span className="font-mono">{imp.sha256}</span></div>
+                    <div className="break-all">SHA-256: <span className="font-cond tnum">{imp.sha256}</span></div>
                     <div className="mt-1">Retrieved via: {imp.retrieved_via}</div>
                   </div>
                   <div className="rounded-lg border border-line bg-deck/60 p-3">
-                    <div className="mb-1 text-[11px] uppercase tracking-wider text-faint">Detected columns → mapping</div>
-                    <div className="font-mono">{imp.detected_columns.map((c) => `“${c}”`).join(", ")}</div>
-                    <div className="mt-1">{Object.entries(imp.column_mapping).map(([k, v]) => <span key={k} className="mr-2 inline-block font-mono text-ink">{k}←{v}</span>)}</div>
+                    <div className="mb-1 text-[11px] text-faint">Detected columns → mapping</div>
+                    <div className="font-cond tnum">{imp.detected_columns.map((c) => `“${c}”`).join(", ")}</div>
+                    <div className="mt-1">{Object.entries(imp.column_mapping).map(([k, v]) => <span key={k} className="mr-2 inline-block font-cond tnum text-ink">{k}←{v}</span>)}</div>
                     {imp.rejection_examples.length > 0 && <div className="mt-2">Rejected: {imp.rejection_examples.slice(0, 6).map((r) => `line ${r.line} (${r.reason})`).join("; ")}{imp.rejection_examples.length > 6 ? "…" : ""}</div>}
                   </div>
                 </div>
                 <div className="grid gap-5 lg:grid-cols-2">
                   <div className="h-56" role="img" aria-label="Histogram of historical EVA durations">
-                    <div className="mb-1 text-[11px] uppercase tracking-wider text-faint">Duration distribution (EVA count)</div>
+                    <div className="mb-1 text-[11px] text-faint">Duration distribution (EVA count)</div>
                     <ResponsiveContainer>
                       <BarChart data={summary.histogram} margin={{ top: 4, right: 4, bottom: 4, left: -16 }}>
                         <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" vertical={false} />
@@ -109,19 +109,19 @@ export default function Research() {
                     </ResponsiveContainer>
                   </div>
                   <div className="h-56" role="img" aria-label="Median EVA duration by decade">
-                    <div className="mb-1 text-[11px] uppercase tracking-wider text-faint">Median duration by decade (hours)</div>
+                    <div className="mb-1 text-[11px] text-faint">Median duration by decade (hours)</div>
                     <ResponsiveContainer>
                       <LineChart data={summary.by_decade} margin={{ top: 4, right: 8, bottom: 4, left: -16 }}>
                         <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" />
                         <XAxis dataKey="decade" tick={chartTheme.tick} stroke={chartTheme.axis} />
                         <YAxis tick={chartTheme.tick} stroke={chartTheme.axis} />
                         <Tooltip {...chartTheme.tooltip} formatter={(v: number, _n, p) => [`${v} h (n=${p.payload.n})`, "median"]} />
-                        <Line dataKey="median_hours" stroke={chartTheme.amber} strokeWidth={2} dot={{ r: 3 }} />
+                        <Line dataKey="median_hours" stroke="#1D2227" strokeWidth={2} dot={{ r: 3 }} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
-                <p className="text-xs text-amber">{summary.usage_note}</p>
+                <p className="text-[13px] text-dim">{summary.usage_note}</p>
                 <details className="text-xs">
                   <summary className="cursor-pointer text-dim">Preview first parsed records</summary>
                   <div className="mt-2 overflow-x-auto">
@@ -129,8 +129,8 @@ export default function Research() {
                       <thead><tr className="text-left text-faint">{["Row", "EVA", "Country", "Crew", "Vehicle", "Date", "Duration"].map((h) => <th key={h} className="pb-1 pr-2 font-normal">{h}</th>)}</tr></thead>
                       <tbody>{rows.map((r) => (
                         <tr key={r.id} className="border-t border-line/50 text-dim">
-                          <td className="py-1 pr-2 font-mono">{r.source_row}</td><td className="pr-2 font-mono">{r.eva_number}</td><td className="pr-2">{r.country}</td>
-                          <td className="pr-2">{r.crew}</td><td className="pr-2">{r.vehicle}</td><td className="pr-2 font-mono">{r.date_raw}</td><td className="pr-2 font-mono">{r.duration_raw}</td>
+                          <td className="py-1 pr-2 font-cond tnum">{r.source_row}</td><td className="pr-2 font-cond tnum">{r.eva_number}</td><td className="pr-2">{r.country}</td>
+                          <td className="pr-2">{r.crew}</td><td className="pr-2">{r.vehicle}</td><td className="pr-2 font-cond tnum">{r.date_raw}</td><td className="pr-2 font-cond tnum">{r.duration_raw}</td>
                         </tr>))}</tbody>
                     </table>
                   </div>

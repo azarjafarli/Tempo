@@ -122,7 +122,7 @@ export default function MotorTask({ crewId, phase, onSaved }: { crewId: number; 
                   <button onClick={begin}
                     className="mx-auto grid h-16 w-16 place-items-center rounded-full border-2 border-cyan bg-cyan-deep/60 text-cyan animate-pulseRing focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan"
                     aria-label="Start motor task"><MousePointer2 size={22} /></button>
-                  <p className="mt-2 font-mono text-xs text-faint">START</p>
+                  <p className="mt-2 font-cond tnum text-xs text-faint">START</p>
                 </div>
               </div>
             )}
@@ -133,11 +133,11 @@ export default function MotorTask({ crewId, phase, onSaved }: { crewId: number; 
                     style={circleStyle(layout, layout.targets[current + 1])} />
                 )}
                 <div key={current} aria-label={`Target ${current + 1}`}
-                  className="pointer-events-none absolute grid place-items-center rounded-full border-2 border-amber bg-amber/25 shadow-[0_0_24px_rgba(244,181,68,0.35)] animate-rise"
+                  className="pointer-events-none absolute grid place-items-center rounded-full border-2 border-amber bg-amber/25 shadow-[0_0_24px_rgba(244,181,68,0.35)]"
                   style={circleStyle(layout, tgt)}>
-                  <span className="font-mono text-[10px] font-bold text-amber">{current + 1}</span>
+                  <span className="font-cond tnum text-[10px] font-bold text-amber">{current + 1}</span>
                 </div>
-                <div className="absolute left-3 top-2 font-mono text-xs text-faint">target {current + 1}/{layout.targets.length} · misses {missFlash}</div>
+                <div className="absolute left-3 top-2 font-cond tnum text-xs text-faint">target {current + 1}/{layout.targets.length} · misses {missFlash}</div>
               </>
             )}
             {state === "saving" && <div className="absolute inset-0 grid place-items-center text-sm text-dim">Saving pointer data and comparing with baseline…</div>}
@@ -157,8 +157,8 @@ export default function MotorTask({ crewId, phase, onSaved }: { crewId: number; 
             {state === "done" && (
               <div className="absolute inset-0 grid place-items-center">
                 <div className="text-center">
-                  <div className="text-xs uppercase tracking-[0.14em] text-faint">Median movement time</div>
-                  <div className="font-mono text-5xl font-bold text-cyan">{fmt(result?.session.summary.median_movement_time_ms as number, 0)}<span className="text-xl text-faint"> ms</span></div>
+                  <div className="text-xs text-faint">Median movement time</div>
+                  <div className="font-cond tnum text-5xl font-bold text-cyan">{fmt(result?.session.summary.median_movement_time_ms as number, 0)}<span className="text-xl text-faint"> ms</span></div>
                   <div className="mt-3"><Button variant="ghost" onClick={() => { setState("ready"); setReload((r) => r + 1); }}><RotateCcw size={15} /> Run again</Button></div>
                 </div>
               </div>

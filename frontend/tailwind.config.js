@@ -1,31 +1,34 @@
 /** @type {import('tailwindcss').Config} */
+// EVA RECOVERY design tokens: "surface procedures" — cool regolith paper, graphite ink,
+// steel blue for baselines and controls, international orange reserved for flags and "now".
 export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        void: "#050b16",
-        deck: "#0a1426",
-        panel: "#0e1b31",
-        panel2: "#13233e",
-        line: "#1f3352",
-        ink: "#dbe6f5",
-        dim: "#8ea3c0",
-        faint: "#5d7392",
-        cyan: { DEFAULT: "#4fd1e8", soft: "#2a8fa3", deep: "#0f3c4a" },
-        amber: { DEFAULT: "#f4b544", soft: "#b98424", deep: "#3d2c0e" },
-        rose: { DEFAULT: "#f07a7a", deep: "#3e1a1f" },
-        jade: { DEFAULT: "#5fd3a2", deep: "#103a2c" },
+        void: "#EEF0ED",   // page: regolith grey
+        deck: "#F6F7F5",   // inset surfaces
+        panel: "#FFFFFF",  // sheets: beta cloth white
+        panel2: "#EEF1EE",
+        line: "#D3D8D2",
+        ink: "#1D2227",    // graphite
+        dim: "#4C565E",
+        faint: "#77818A",
+        cyan: { DEFAULT: "#2B5F8E", soft: "#7FA3C4", deep: "#E2EBF3" },   // steel
+        amber: { DEFAULT: "#C8460F", soft: "#EE8A5C", deep: "#FBE8DE" },  // international orange
+        rose: { DEFAULT: "#9E2F28", deep: "#F5E0DD" },                    // rust: invalid / errors
+        jade: { DEFAULT: "#3F7140", deep: "#E2EDDF" },                    // moss: within baseline
       },
       fontFamily: {
-        sans: ['"Inter"', '"Segoe UI"', "system-ui", "sans-serif"],
-        mono: ['"JetBrains Mono"', '"Cascadia Mono"', "Consolas", "monospace"],
+        sans: ['"Barlow"', '"Segoe UI"', "system-ui", "sans-serif"],
+        cond: ['"Barlow Condensed"', '"Barlow"', '"Arial Narrow"', "sans-serif"],
+        mono: ['"Barlow Condensed"', '"Barlow"', "sans-serif"],
       },
       keyframes: {
-        rise: { "0%": { opacity: "0", transform: "translateY(6px)" }, "100%": { opacity: "1", transform: "none" } },
-        pulseRing: { "0%": { boxShadow: "0 0 0 0 rgba(79,209,232,.55)" }, "100%": { boxShadow: "0 0 0 18px rgba(79,209,232,0)" } },
+        pulseRing: { "0%": { boxShadow: "0 0 0 0 rgba(43,95,142,.45)" }, "100%": { boxShadow: "0 0 0 16px rgba(43,95,142,0)" } },
+        sweep: { "0%": { transform: "scaleX(0)" }, "100%": { transform: "scaleX(1)" } },
       },
-      animation: { rise: "rise .35s ease-out both", pulseRing: "pulseRing 1.6s ease-out infinite" },
+      animation: { pulseRing: "pulseRing 1.6s ease-out infinite", sweep: "sweep .9s cubic-bezier(.2,.7,.2,1) both", rise: "none" },
     },
   },
   plugins: [],

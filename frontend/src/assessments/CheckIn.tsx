@@ -22,7 +22,7 @@ function Slider({ label, value, onChange, min, max, step, low, high, help }: {
     <div>
       <div className="flex items-baseline justify-between">
         <label htmlFor={id} className="text-sm text-ink">{label}</label>
-        <span className="font-mono text-sm text-cyan">{value}</span>
+        <span className="font-cond tnum text-sm text-cyan">{value}</span>
       </div>
       {help && <p className="text-xs text-faint">{help}</p>}
       <input id={id} type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))}
@@ -70,7 +70,7 @@ export default function CheckIn({ crewId }: { crewId: number }) {
         <div className="mt-6 border-t border-line pt-5">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h3 className="text-sm font-semibold text-ink">NASA Task Load Index dimensions <span className="font-normal text-faint">(rate the most recent EVA or work block, 0–100)</span></h3>
-            <div className="text-sm">Raw TLX <span className="font-mono text-lg text-amber">{raw}</span></div>
+            <div className="text-sm">Raw TLX <span className="font-cond tnum text-lg text-amber">{raw}</span></div>
           </div>
           <div className="mt-4 grid gap-5 md:grid-cols-2">
             {TLX.map((t) => (
@@ -82,7 +82,7 @@ export default function CheckIn({ crewId }: { crewId: number }) {
           </p>
         </div>
         <div className="mt-5">
-          <label htmlFor={notesId} className="text-xs uppercase tracking-[0.12em] text-faint">Notes (optional)</label>
+          <label htmlFor={notesId} className="text-xs text-faint">Notes (optional)</label>
           <textarea id={notesId} value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={500} rows={2}
             className="mt-1 w-full rounded-lg border border-line bg-deck px-3 py-2 text-sm text-ink focus:border-cyan focus:outline-none focus:ring-1 focus:ring-cyan" />
         </div>
@@ -99,7 +99,7 @@ export default function CheckIn({ crewId }: { crewId: number }) {
                 <span>{r.mission_day ? `Mission day ${r.mission_day}` : new Date(r.recorded_at).toLocaleString()}</span>
                 <ProvenanceBadge p={r.provenance} />
               </div>
-              <div className="mt-1 grid grid-cols-4 gap-2 font-mono text-xs text-ink">
+              <div className="mt-1 grid grid-cols-4 gap-2 font-cond tnum text-xs text-ink">
                 <span>sleep {fmt(r.sleep_hours, 1)}h</span><span>fatigue {fmt(r.fatigue)}</span><span>recov {fmt(r.recovery)}</span><span>TLX {fmt(r.raw_tlx, 0)}</span>
               </div>
             </li>

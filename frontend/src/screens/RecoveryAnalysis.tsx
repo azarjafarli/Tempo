@@ -52,8 +52,8 @@ export default function RecoveryAnalysis() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-cyan">Recovery Analysis</p>
-          <h1 className="mt-1 text-2xl font-semibold">Personal baseline comparison · {data.crew.display_name}</h1>
+          <h1 className="font-cond text-[40px] font-bold leading-[1.05] text-ink">Compare with {data.crew.code === "LOCAL" ? "your" : `${data.crew.code}’s`} baseline</h1>
+          <p className="mt-1.5 max-w-[68ch] text-[15.5px] text-dim">Each result is measured against the same person’s earlier valid sessions, never against other people.</p>
         </div>
         <div className="flex flex-wrap items-end gap-3">
           <Select label="Assessment" value={type} onChange={(v) => { setType(v); setSessionId(null); }}
@@ -90,7 +90,7 @@ export default function RecoveryAnalysis() {
                     return (
                       <div className="rounded-lg border border-line bg-deck px-3 py-2 text-xs">
                         <div className="text-dim">#{p.id} · {p.label} · {p.phase}</div>
-                        <div className="font-mono text-ink">{fmt(p.value as number, d)} {rule?.unit}</div>
+                        <div className="font-cond tnum text-ink">{fmt(p.value as number, d)} {rule?.unit}</div>
                         <div style={{ color: CAT_COLOR[p.category] }}>{CATEGORY_STYLE[p.category].label}</div>
                       </div>
                     );
@@ -99,7 +99,7 @@ export default function RecoveryAnalysis() {
                 <Scatter dataKey="value" isAnimationActive={false}
                   shape={(p: { cx?: number; cy?: number; payload?: (typeof series)[number] }) => (
                     <circle cx={p.cx} cy={p.cy} r={p.payload?.evaluated ? 7 : 4.5} fill={CAT_COLOR[p.payload?.category ?? "baseline"]}
-                      stroke={p.payload?.evaluated ? "#dbe6f5" : "#050b16"} strokeWidth={p.payload?.evaluated ? 2 : 1.5} style={{ cursor: "pointer" }}
+                      stroke={p.payload?.evaluated ? "#1d2227" : "#ffffff"} strokeWidth={p.payload?.evaluated ? 2 : 1.5} style={{ cursor: "pointer" }}
                       onClick={() => p.payload && setSessionId(p.payload.id)} />
                   )} />
               </ComposedChart>
@@ -119,7 +119,7 @@ export default function RecoveryAnalysis() {
       <div className="grid gap-5 xl:grid-cols-2">
         <Card title="Mission trends (exploratory)" icon={<TrendingUp size={15} />} subtitle="Theil–Sen median slope across valid mission sessions, with a 90% interval. Needs ≥ 4 sessions.">
           <table className="w-full text-sm">
-            <thead><tr className="text-left text-[11px] uppercase tracking-wider text-faint"><th className="pb-2 font-normal">Metric</th><th className="pb-2 font-normal">Slope / day</th><th className="pb-2 font-normal">90% interval</th><th className="pb-2 font-normal">n</th></tr></thead>
+            <thead><tr className="text-left text-[11px] text-faint"><th className="pb-2 font-normal">Metric</th><th className="pb-2 font-normal">Slope / day</th><th className="pb-2 font-normal">90% interval</th><th className="pb-2 font-normal">n</th></tr></thead>
             <tbody>
               {data.rules.metrics[type].map((m) => {
                 const t = data.trends[m.key];
@@ -127,9 +127,9 @@ export default function RecoveryAnalysis() {
                 return (
                   <tr key={m.key} className="border-t border-line/60">
                     <td className="py-2 text-ink">{m.label}</td>
-                    <td className="py-2 font-mono">{t ? signed(t.slope_per_day, Math.max(dd, 1)) : "—"}</td>
-                    <td className="py-2 font-mono text-dim">{t ? `${fmt(t.low, Math.max(dd, 1))} … ${fmt(t.high, Math.max(dd, 1))}` : "insufficient data"}</td>
-                    <td className="py-2 font-mono text-dim">{t?.n_points ?? 0}</td>
+                    <td className="py-2 font-cond tnum">{t ? signed(t.slope_per_day, Math.max(dd, 1)) : "—"}</td>
+                    <td className="py-2 font-cond tnum text-dim">{t ? `${fmt(t.low, Math.max(dd, 1))} … ${fmt(t.high, Math.max(dd, 1))}` : "insufficient data"}</td>
+                    <td className="py-2 font-cond tnum text-dim">{t?.n_points ?? 0}</td>
                   </tr>
                 );
               })}
@@ -143,16 +143,16 @@ export default function RecoveryAnalysis() {
 
       <Card title="Documented exploratory rules" icon={<BookMarked size={15} />} subtitle={data.rules.disclaimer}>
         <div className="grid gap-4 text-sm text-dim md:grid-cols-3">
-          <div><div className="text-[11px] uppercase tracking-wider text-faint">Baseline</div>Valid sessions marked “baseline”. &lt; {data.rules.min_baseline_sessions} = insufficient; {data.rules.min_baseline_sessions}–{data.rules.established_baseline_sessions - 1} = provisional; ≥ {data.rules.established_baseline_sessions} = established. Invalid runs excluded.</div>
-          <div><div className="text-[11px] uppercase tracking-wider text-faint">Statistic</div>robust z = (value − median) / max({data.rules.mad_scale} × MAD, absolute floor, relative floor × |median|). Floors stop zero-variance baselines from inflating z.</div>
-          <div><div className="text-[11px] uppercase tracking-wider text-faint">Flag</div>“Functional change worth reviewing” only if adverse robust z ≥ {data.rules.z_threshold} <em>and</em> adverse change ≥ the metric’s minimum change.</div>
+          <div><div className="text-[11px] text-faint">Baseline</div>Valid sessions marked “baseline”. &lt; {data.rules.min_baseline_sessions} = insufficient; {data.rules.min_baseline_sessions}–{data.rules.established_baseline_sessions - 1} = provisional; ≥ {data.rules.established_baseline_sessions} = established. Invalid runs excluded.</div>
+          <div><div className="text-[11px] text-faint">Statistic</div>robust z = (value − median) / max({data.rules.mad_scale} × MAD, absolute floor, relative floor × |median|). Floors stop zero-variance baselines from inflating z.</div>
+          <div><div className="text-[11px] text-faint">Flag</div>“Functional change worth reviewing” only if adverse robust z ≥ {data.rules.z_threshold} <em>and</em> adverse change ≥ the metric’s minimum change.</div>
         </div>
         <table className="mt-4 w-full text-sm">
-          <thead><tr className="text-left text-[11px] uppercase tracking-wider text-faint"><th className="pb-2 font-normal">Metric</th><th className="pb-2 font-normal">Adverse</th><th className="pb-2 font-normal">Min change</th><th className="pb-2 font-normal">Spread floor</th></tr></thead>
+          <thead><tr className="text-left text-[11px] text-faint"><th className="pb-2 font-normal">Metric</th><th className="pb-2 font-normal">Adverse</th><th className="pb-2 font-normal">Min change</th><th className="pb-2 font-normal">Spread floor</th></tr></thead>
           <tbody>{data.rules.metrics[type].map((m) => (
             <tr key={m.key} className="border-t border-line/60"><td className="py-1.5 text-ink">{m.label}</td><td className="text-dim">{m.adverse === "up" ? "increase" : "decrease"}</td>
-              <td className="font-mono">{m.min_change} {m.unit === "count" || m.unit === "ratio" ? "" : m.unit}</td>
-              <td className="font-mono text-dim">{m.floor_abs}{m.floor_rel ? ` or ${m.floor_rel * 100}% of median` : ""}</td></tr>))}
+              <td className="font-cond tnum">{m.min_change} {m.unit === "count" || m.unit === "ratio" ? "" : m.unit}</td>
+              <td className="font-cond tnum text-dim">{m.floor_abs}{m.floor_rel ? ` or ${m.floor_rel * 100}% of median` : ""}</td></tr>))}
           </tbody>
         </table>
       </Card>
@@ -163,7 +163,7 @@ export default function RecoveryAnalysis() {
             <tbody>
               {[...data.history].reverse().map((h) => (
                 <tr key={h.id} className="border-t border-line/60 align-top">
-                  <td className="py-2 font-mono text-faint">#{h.id}</td>
+                  <td className="py-2 font-cond tnum text-faint">#{h.id}</td>
                   <td className="py-2 text-dim">{h.provenance === "synthetic" ? missionTime(h.mission_time_days) : new Date(h.started_at).toLocaleString()}</td>
                   <td className="py-2 text-dim">{h.phase}</td>
                   <td className="py-2"><CategoryBadge category={h.category} small />
