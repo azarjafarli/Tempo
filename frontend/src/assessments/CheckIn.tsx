@@ -26,16 +26,13 @@ function Slider({ label, value, onChange, min, max, step, low, high, help }: {
       </div>
       {help && <p className="text-xs text-faint">{help}</p>}
       <input id={id} type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))}
-        className="mt-1.5 w-full accent-[#4fd1e8]" aria-valuetext={`${value}`} />
+        className="mt-1.5 w-full accent-[#2B5F8E]" aria-valuetext={`${value}`} />
       <div className="flex justify-between text-[11px] text-faint"><span>{low}</span><span>{high}</span></div>
     </div>
   );
 }
 
 export default function CheckIn({ crewId }: { crewId: number }) {
-  const [sleep, setSleep] = useState(7);
-  const [fatigue, setFatigue] = useState(3);
-  const [recovery, setRecovery] = useState(7);
   const [tlx, setTlx] = useState<Record<string, number>>(Object.fromEntries(TLX.map((t) => [t.key, 50])));
   const [notes, setNotes] = useState("");
   const [reports, setReports] = useState<SelfReport[]>([]);
@@ -49,10 +46,10 @@ export default function CheckIn({ crewId }: { crewId: number }) {
   const submit = async () => {
     try {
       const r = await api.post<{ id: number; reports: SelfReport[] }>("/api/self-reports", {
-        crew_member_id: crewId, sleep_hours: sleep, fatigue, recovery, ...tlx, notes: notes || null,
+        crew_member_id: crewId, ...tlx, notes: notes || null,
       });
       setReports(r.reports);
-      setMsg({ tone: "info", text: `Check-in #${r.id} saved (self-reported, real local entry).` });
+      setMsg({ tone: "info", text: `Workload rating #${r.id} saved.` });
     } catch (e) {
       setMsg({ tone: "error", text: (e as Error).message });
     }
@@ -60,17 +57,12 @@ export default function CheckIn({ crewId }: { crewId: number }) {
 
   return (
     <div className="grid gap-5 xl:grid-cols-3">
-      <Card title="Contextual check-in" icon={<ClipboardCheck size={15} />} actions={<SelfReportedTag />} className="xl:col-span-2"
-        subtitle="All entries are self-reported context for interpreting performance results. They are not measured physiology.">
-        <div className="grid gap-6 md:grid-cols-3">
-          <Slider label="Sleep duration (h)" value={sleep} onChange={setSleep} min={0} max={12} step={0.25} low="0 h" high="12 h" help="Last sleep period" />
-          <Slider label="Subjective fatigue" value={fatigue} onChange={setFatigue} min={0} max={10} step={1} low="None" high="Extreme" />
-          <Slider label="Perceived recovery" value={recovery} onChange={setRecovery} min={0} max={10} step={1} low="Not recovered" high="Fully recovered" />
-        </div>
-        <div className="mt-6 border-t border-line pt-5">
+      <Card title="Workload check-in" icon={<ClipboardCheck size={15} />} actions={<SelfReportedTag />} className="xl:col-span-2"
+        subtitle="Only perceived workload is self-reported. Sleep and recovery are measured by the wearable and appear as the sleep score and readiness.">
+        <div>
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h3 className="text-sm font-semibold text-ink">NASA Task Load Index dimensions <span className="font-normal text-faint">(rate the most recent EVA or work block, 0–100)</span></h3>
-            <div className="text-sm">Raw TLX <span className="font-cond tnum text-lg text-amber">{raw}</span></div>
+            <div className="text-sm">Raw TLX <span className="font-cond tnum text-[22px] font-semibold text-ink">{raw}</span></div>
           </div>
           <div className="mt-4 grid gap-5 md:grid-cols-2">
             {TLX.map((t) => (
@@ -91,20 +83,18 @@ export default function CheckIn({ crewId }: { crewId: number }) {
           {msg && <Notice tone={msg.tone}>{msg.text}</Notice>}
         </div>
       </Card>
-      <Card title="Check-in history" actions={<SelfReportedTag />}>
+      <Card title="Workload history" actions={<SelfReportedTag />}>
         <ul className="space-y-2 text-sm">
           {[...reports].reverse().slice(0, 10).map((r) => (
             <li key={r.id} className="rounded-lg border border-line bg-deck/60 px-3 py-2">
               <div className="flex items-center justify-between text-xs text-faint">
-                <span>{r.mission_day ? `Mission day ${r.mission_day}` : new Date(r.recorded_at).toLocaleString()}</span>
+                <span>{r.mission_day ? `Mission day ${r.mission_day}` : r.provenance === "synthetic" ? "Pre-mission" : new Date(r.recorded_at).toLocaleString()}</span>
                 <ProvenanceBadge p={r.provenance} />
               </div>
-              <div className="mt-1 grid grid-cols-4 gap-2 font-cond tnum text-xs text-ink">
-                <span>sleep {fmt(r.sleep_hours, 1)}h</span><span>fatigue {fmt(r.fatigue)}</span><span>recov {fmt(r.recovery)}</span><span>TLX {fmt(r.raw_tlx, 0)}</span>
-              </div>
+              <div className="mt-1 font-cond text-[15px] tnum text-ink">Raw TLX <strong className="font-semibold">{fmt(r.raw_tlx, 0)}</strong><span className="text-faint"> of 100</span></div>
             </li>
           ))}
-          {reports.length === 0 && <li className="text-dim">No check-ins yet.</li>}
+          {reports.length === 0 && <li className="text-dim">No workload ratings yet.</li>}
         </ul>
       </Card>
     </div>

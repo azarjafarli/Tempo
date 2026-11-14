@@ -32,10 +32,9 @@ EVA RECOVERY is a hackathon research prototype. Read this before drawing any con
 12. Learning/practice effects across early sessions are not modelled.
 13. Trends from 4–6 sessions have wide intervals and are descriptive only.
 
-## Self-reported context
-14. Sleep, fatigue, recovery and workload are self-reported and unverified. They are shown for context and
-    are not part of any flagging rule. Raw TLX is the unweighted mean of the six NASA-TLX ratings, not the
-    full weighted procedure.
+## Self-reported workload
+14. Only workload is self-reported (six NASA-TLX ratings). It is unverified, shown for context and not part of
+    any flagging rule. Raw TLX is the unweighted mean of the six ratings, not the full weighted procedure.
 
 ## Sleep score and readiness
 15a. Both 0–100 scores imitate the published structure of Fitbit's Sleep Score (time asleep 50, deep and REM 25,

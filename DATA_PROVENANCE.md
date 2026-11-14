@@ -5,8 +5,8 @@ Every record in the database carries exactly one provenance category, and the UI
 | Category (`provenance`) | Label in UI | What it contains | Where it comes from |
 |---|---|---|---|
 | `nasa_public_data` | NASA public data | 368 parsed EVA records (of 375 rows) | The NASA "Extra-vehicular Activity (EVA) – US and Russia" CSV |
-| `local_measurement` | Real · local | Reaction-time trials, pointer samples/clicks and check-ins recorded in your browser | Whoever performs the assessments on this computer |
-| `synthetic` | Synthetic | Fictional crew (VEGA, ORION, LYRA), the LX-5 mission, EVA tasks, assessment trials, self-reports | `backend/app/seed.py`, fixed seeds |
+| `local_measurement` | Real · local | Reaction-time trials, pointer samples/clicks and workload ratings recorded in your browser | Whoever performs the assessments on this computer |
+| `synthetic` | Synthetic | Fictional crew (VEGA, ORION, LYRA), the LX-5 mission, EVA tasks, assessment trials, wearable nights, workload ratings | `backend/app/seed.py`, fixed seeds |
 | `published_reference` | Reference | Links and one-line descriptions of NASA pages | `backend/app/provenance.py` |
 | `hypothetical_scenario` | Hypothetical | Optimizer outputs under reviewer-chosen assumptions | `backend/app/scheduler.py` |
 
@@ -40,6 +40,11 @@ Every record in the database carries exactly one provenance category, and the UI
 * All random draws use `numpy.random.default_rng([20260514, profile, crew, session, stream])`. A SHA-256
   fingerprint over all synthetic observations is checked for determinism in the tests.
 * The UI shows an amber **DEMO SCENARIO** indicator whenever synthetic data is displayed.
+
+## What is self-reported
+
+Only perceived workload: the six NASA-TLX ratings (Raw TLX). Sleep, recovery and other health signals are
+never self-reported; they come from (currently synthetic) wearable data.
 
 ## Synthetic wearable data (sleep score and readiness)
 

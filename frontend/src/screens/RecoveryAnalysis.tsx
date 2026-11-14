@@ -1,10 +1,11 @@
 import { BookMarked, LineChart as LineIcon, Moon, Sigma, TrendingUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
-  Bar, BarChart, CartesianGrid, ComposedChart, Legend, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis,
+  Bar, BarChart, CartesianGrid, ComposedChart, Legend, Line, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis,
 } from "recharts";
 import { EvaluationSummary } from "../components/EvaluationView";
 import { Card, CategoryBadge, chartTheme, DemoScenarioBanner, Loading, Notice, ProvenanceBadge, Select, SelfReportedTag } from "../components/ui";
+import { WearableTrend, type WearableSummary } from "../components/WearableScores";
 import { useApp } from "../context";
 import { api } from "../lib/api";
 import { CATEGORY_STYLE, digitsFor, fmt, missionTime, signed } from "../lib/format";
@@ -226,30 +227,20 @@ function DistributionCard({ data }: { data: Analysis }) {
 }
 
 function SelfReportCard({ data }: { data: Analysis }) {
-  const rows = data.self_reports.map((r, i) => ({
-    i: i + 1, label: r.mission_day ? `D${r.mission_day}` : r.provenance === "synthetic" ? "pre" : new Date(r.recorded_at).toLocaleDateString(),
-    sleep: r.sleep_hours, fatigue: r.fatigue, recovery: r.recovery, tlx: r.raw_tlx != null ? r.raw_tlx / 10 : null,
-  }));
+  const [w, setW] = useState<WearableSummary | null>(null);
+  useEffect(() => { api.get<WearableSummary>(`/api/wearable/${data.crew.id}`).then(setW).catch(() => setW(null)); }, [data.crew.id]);
+  const tlx = data.self_reports.filter((r) => r.raw_tlx != null);
   return (
-    <Card title="Self-reported context" icon={<Moon size={15} />} actions={<SelfReportedTag />}
-      subtitle="Shown alongside performance for context only. Not included in any flagging rule.">
-      {rows.length === 0 ? <p className="text-sm text-dim">No check-ins yet.</p> : (
-        <div className="h-60" role="img" aria-label="Self-reported sleep, fatigue, recovery and Raw TLX over time">
-          <ResponsiveContainer>
-            <LineChart data={rows} margin={{ top: 8, right: 8, bottom: 4, left: -16 }}>
-              <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" />
-              <XAxis dataKey="label" tick={chartTheme.tick} stroke={chartTheme.axis} />
-              <YAxis tick={chartTheme.tick} stroke={chartTheme.axis} domain={[0, 10]} />
-              <Tooltip {...chartTheme.tooltip} formatter={(v: number, n: string) => (n === "Raw TLX ÷ 10" ? `${(v * 10).toFixed(0)} (Raw TLX)` : v)} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Line dataKey="sleep" name="Sleep (h)" stroke={chartTheme.cyan} strokeWidth={2} dot={{ r: 3 }} />
-              <Line dataKey="fatigue" name="Fatigue (0–10)" stroke={chartTheme.amber} strokeWidth={2} dot={{ r: 3 }} />
-              <Line dataKey="recovery" name="Recovery (0–10)" stroke={chartTheme.jade} strokeWidth={2} dot={{ r: 3 }} />
-              <Line dataKey="tlx" name="Raw TLX ÷ 10" stroke={chartTheme.rose} strokeDasharray="4 3" strokeWidth={1.5} dot={{ r: 2 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      )}
+    <Card title="Sleep, readiness and workload" icon={<Moon size={15} />}
+      subtitle="Context shown next to the test results; none of it is part of any flagging rule."
+      actions={w?.provenance && <ProvenanceBadge p={w.provenance} />}>
+      {w?.available ? <WearableTrend w={w} height={190} /> : <p className="text-sm text-dim">No wearable data for this person.</p>}
+      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line pt-3 text-[13px] text-dim">
+        <SelfReportedTag /> Raw TLX workload:
+        {tlx.length ? tlx.slice(-5).map((r) => (
+          <span key={r.id} className="font-cond text-[15px] tnum text-ink">{r.mission_day ? `D${r.mission_day}` : "pre"} {fmt(r.raw_tlx, 0)}</span>
+        )) : <span>none yet</span>}
+      </div>
     </Card>
   );
 }

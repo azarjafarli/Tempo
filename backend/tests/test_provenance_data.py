@@ -90,3 +90,11 @@ def test_bundled_nasa_file_imports(db):
     s = nasa_import.summary(db)
     assert s["records"] == st["import"]["rows_valid"]
     assert "not used as labels" in s["usage_note"]
+
+
+def test_health_data_is_not_self_reported(db):
+    """Sleep, fatigue and recovery come from the wearable; self-reports hold only workload ratings."""
+    n = db.execute("SELECT COUNT(*) FROM self_reports WHERE sleep_hours IS NOT NULL OR fatigue IS NOT NULL "
+                   "OR recovery IS NOT NULL").fetchone()[0]
+    assert n == 0
+    assert db.execute("SELECT COUNT(*) FROM self_reports WHERE raw_tlx IS NOT NULL").fetchone()[0] > 0

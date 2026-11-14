@@ -1,8 +1,9 @@
-import { ClipboardCheck, Database, ListChecks, Moon, Timer, User } from "lucide-react";
+import { ClipboardCheck, Database, ListChecks, Timer, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CartesianGrid, ComposedChart, Line, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from "recharts";
 import { Button, Card, CategoryBadge, chartTheme, cx, DemoScenarioBanner, Loading, Notice, ProvenanceBadge, SelfReportedTag, Stat } from "../components/ui";
 import { WearableCard } from "../components/WearableScores";
+import { WorkloadPanel } from "../components/WorkloadPanel";
 import { useApp } from "../context";
 import { api } from "../lib/api";
 import { fmt, hhmm, hoursToHM, missionTime, signed } from "../lib/format";
@@ -96,19 +97,9 @@ export default function MissionOverview() {
           <p className="mt-3 text-xs text-faint">Baseline: 3–4 valid sessions = provisional, 5+ = established. Invalid runs are kept for audit but never interpreted.</p>
         </Card>
 
-        <Card title="Latest check-in" icon={<ClipboardCheck size={15} />} actions={<SelfReportedTag />}>
-          {data.latest_self_report ? (
-            <div className="grid grid-cols-2 gap-4">
-              <Stat label="Sleep" value={fmt(data.latest_self_report.sleep_hours, 1, "h")} />
-              <Stat label="Raw TLX" value={fmt(data.latest_self_report.raw_tlx, 0)} sub="0–100, unweighted" />
-              <Stat label="Fatigue" value={`${fmt(data.latest_self_report.fatigue)}/10`} />
-              <Stat label="Recovery" value={`${fmt(data.latest_self_report.recovery)}/10`} />
-              <div className="col-span-2 flex items-center gap-2 text-xs text-faint">
-                <Moon size={12} aria-hidden /> {data.latest_self_report.mission_day ? `Mission day ${data.latest_self_report.mission_day}` : new Date(data.latest_self_report.recorded_at).toLocaleString()}
-                <ProvenanceBadge p={data.latest_self_report.provenance} />
-              </div>
-            </div>
-          ) : <p className="text-sm text-dim">No check-in recorded yet.</p>}
+        <Card title="Latest workload rating" icon={<ClipboardCheck size={15} />} actions={<SelfReportedTag />}
+          subtitle="The only self-reported item. Sleep and recovery come from the wearable.">
+          <WorkloadPanel report={data.latest_self_report} />
         </Card>
       </div>
     </div>

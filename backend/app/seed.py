@@ -328,7 +328,7 @@ def load_demo(conn: sqlite3.Connection, profile: str = "declining") -> dict[str,
 
     seed_wearable(conn, profile, crew_ids)
 
-    # Self-reported context (synthetic)
+    # Self-reported workload (NASA-TLX dimensions) only; sleep and recovery come from the wearable data above
     sr_days = [-8, -6, 1, 2, 3]
     for ci, c in enumerate(CREW):
         rng = _rng(p_idx, ci, 500)
@@ -337,16 +337,14 @@ def load_demo(conn: sqlite3.Connection, profile: str = "declining") -> dict[str,
             step = (d if decline else 0)
             insert_self_report(
                 conn, crew_member_id=crew_ids[c["code"]], mission_day=d if d > 0 else None,
-                recorded_at=ts(d + 0.27), sleep_hours=round(float(7.3 - 0.55 * step + rng.normal(0, 0.2)), 1),
-                fatigue=float(np.clip(round(2 + 1.3 * step + rng.normal(0, 0.4)), 0, 10)),
-                recovery=float(np.clip(round(8 - 1.2 * step + rng.normal(0, 0.4)), 0, 10)),
+                recorded_at=ts(d + 0.27),
                 tlx_mental=float(np.clip(round(35 + 8 * step + rng.normal(0, 4)), 0, 100)),
                 tlx_physical=float(np.clip(round(45 + 10 * step + rng.normal(0, 4)), 0, 100)),
                 tlx_temporal=float(np.clip(round(30 + 6 * step + rng.normal(0, 4)), 0, 100)),
                 tlx_performance=float(np.clip(round(25 + 7 * step + rng.normal(0, 4)), 0, 100)),
                 tlx_effort=float(np.clip(round(45 + 9 * step + rng.normal(0, 4)), 0, 100)),
                 tlx_frustration=float(np.clip(round(20 + 6 * step + rng.normal(0, 4)), 0, 100)),
-                notes="Synthetic self-report", provenance="synthetic")
+                notes="Synthetic workload rating", provenance="synthetic")
 
     return {"mission_id": mission_id, "profile": profile, "sessions_created": n_sessions, "seed": BASE_SEED,
             "fingerprint": synthetic_fingerprint(conn)}

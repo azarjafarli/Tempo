@@ -1,8 +1,9 @@
 import { CalendarRange, ClipboardList, LineChart as LineIcon, Moon, NotebookPen } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { CartesianGrid, ComposedChart, Legend, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, ComposedChart, Line, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from "recharts";
 import { Button, Card, CategoryBadge, chartTheme, cx, DemoScenarioBanner, Loading, Notice, ProvenanceBadge, SelfReportedTag } from "../components/ui";
 import { WearableCard, WearableCell, type WearableSummary } from "../components/WearableScores";
+import { WorkloadPanel } from "../components/WorkloadPanel";
 import { useApp } from "../context";
 import { api } from "../lib/api";
 import { fmt, hhmm, hoursToHM, missionTime, signed } from "../lib/format";
@@ -126,7 +127,7 @@ function Roster({ data, selected, onSelect }: { data: MissionControlResp; select
               <th className="px-3 font-medium">Vigilant attention <span className="text-faint">(median RT)</span></th>
               <th className="px-3 font-medium">Precision motor <span className="text-faint">(median movement)</span></th>
               <th className="px-3 font-medium">Last night <span className="text-faint">(wearable)</span></th>
-              <th className="px-3 font-medium">Latest check-in</th>
+              <th className="px-3 font-medium">Workload <span className="text-faint">(self-reported)</span></th>
               <th className="px-3 font-medium">EVA load</th>
               <th className="px-3 font-medium">Data quality</th>
               <th className="px-3 pr-5 font-medium">Review</th>
@@ -154,11 +155,10 @@ function Roster({ data, selected, onSelect }: { data: MissionControlResp; select
                   <td className="px-3 py-3.5"><MetricCell a={r.assessments.motor} /></td>
                   <td className="whitespace-nowrap px-3 py-3.5"><WearableCell w={r.wearable} /></td>
                   <td className="px-3 py-3.5">
-                    {sr ? (
+                    {sr?.raw_tlx != null ? (
                       <div className="font-cond text-[15px] leading-snug tnum">
-                        <div><span className="text-faint">Sleep</span> <span className="font-semibold">{fmt(sr.sleep_hours, 1)} h</span></div>
-                        <div><span className="text-faint">Fatigue</span> <span className="font-semibold">{fmt(sr.fatigue)}/10</span> <span className="text-faint">Recovery</span> <span className="font-semibold">{fmt(sr.recovery)}/10</span></div>
-                        <div><span className="text-faint">Raw TLX</span> <span className="font-semibold">{fmt(sr.raw_tlx, 0)}</span></div>
+                        <div><span className="text-faint">Raw TLX</span> <span className="font-semibold">{fmt(sr.raw_tlx, 0)}</span><span className="text-faint"> of 100</span></div>
+                        <div className="text-[13px] text-faint">{sr.mission_day ? `Mission day ${sr.mission_day}` : "pre-mission"}</div>
                         <div className="mt-1"><SelfReportedTag /></div>
                       </div>
                     ) : <span className="text-dim">None</span>}
@@ -301,30 +301,27 @@ function EvaCard({ entry }: { entry: RosterEntry }) {
 }
 
 function CheckInCard({ reports }: { reports: SelfReport[] }) {
-  const rows = reports.map((r, i) => ({
-    i, label: r.mission_day ? `D${r.mission_day}` : "pre", sleep: r.sleep_hours, fatigue: r.fatigue, recovery: r.recovery,
-    tlx: r.raw_tlx != null ? r.raw_tlx / 10 : null,
-  }));
+  const rows = reports.filter((r) => r.raw_tlx != null).map((r, i) => ({ i, label: r.mission_day ? `D${r.mission_day}` : "pre", tlx: r.raw_tlx }));
+  const latest = reports.filter((r) => r.raw_tlx != null).slice(-1)[0] ?? null;
   return (
-    <Card title="Check-ins" icon={<Moon size={16} />} actions={<SelfReportedTag />} className="xl:col-span-2"
-      subtitle="Self-reported sleep, fatigue, recovery and Raw TLX (shown divided by 10). Context only; not part of any flag.">
-      {rows.length === 0 ? <p className="text-[14px] text-dim">No check-ins yet.</p> : (
-        <div className="h-56" role="img" aria-label="Self-reported check-ins over time">
-          <ResponsiveContainer>
-            <LineChart data={rows} margin={{ top: 6, right: 8, bottom: 0, left: -18 }}>
-              <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" />
-              <XAxis dataKey="label" tick={chartTheme.tick} stroke={chartTheme.axis} />
-              <YAxis domain={[0, 10]} tick={chartTheme.tick} stroke={chartTheme.axis} />
-              <Tooltip {...chartTheme.tooltip} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Line dataKey="sleep" name="Sleep (h)" stroke={chartTheme.cyan} strokeWidth={2} dot={{ r: 3 }} />
-              <Line dataKey="fatigue" name="Fatigue" stroke={chartTheme.amber} strokeWidth={2} dot={{ r: 3 }} />
-              <Line dataKey="recovery" name="Recovery" stroke={chartTheme.jade} strokeWidth={2} dot={{ r: 3 }} />
-              <Line dataKey="tlx" name="Raw TLX ÷ 10" stroke="#1D2227" strokeDasharray="4 3" strokeWidth={1.5} dot={{ r: 2 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      )}
+    <Card title="Workload ratings" icon={<Moon size={16} />} actions={<SelfReportedTag />} className="xl:col-span-2"
+      subtitle="NASA-TLX workload is the only self-reported data. Raw TLX is the unweighted mean of six 0–100 ratings; context only, not part of any flag.">
+      <div className="grid gap-6 md:grid-cols-2">
+        <WorkloadPanel report={latest} />
+        {rows.length > 0 && (
+          <div className="h-52" role="img" aria-label="Raw TLX by check-in">
+            <ResponsiveContainer>
+              <BarChart data={rows} margin={{ top: 6, right: 8, bottom: 0, left: -18 }}>
+                <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="label" tick={chartTheme.tick} stroke={chartTheme.axis} />
+                <YAxis domain={[0, 100]} tick={chartTheme.tick} stroke={chartTheme.axis} />
+                <Tooltip {...chartTheme.tooltip} formatter={(v: number) => [`${v}`, "Raw TLX"]} />
+                <Bar dataKey="tlx" name="Raw TLX" fill="#1D2227" radius={[2, 2, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
     </Card>
   );
 }

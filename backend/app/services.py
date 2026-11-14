@@ -197,7 +197,7 @@ def overview(conn: sqlite3.Connection, crew_id: int | None = None) -> dict[str, 
     reports = list_self_reports(conn, cid)
     latest_report = reports[-1] if reports else None
     if not latest_report or latest_report.get("mission_day") != mission["current_day"]:
-        next_steps.append("Complete today's self-reported check-in (sleep, fatigue, recovery, Raw TLX).")
+        next_steps.append("Complete today's workload check-in (six NASA-TLX ratings).")
     if not next_steps:
         next_steps.append("No action suggested by the exploratory rules. Continue routine assessments.")
 

@@ -46,19 +46,20 @@ def test_interrupted_run_is_not_interpreted(client):
 def test_validation_errors(client):
     assert client.post("/api/assessments/pvt", json={"crew_member_id": 1, "trials": [{"kind": "bogus", "t_ms": 1}]}).status_code == 422
     assert client.post("/api/assessments/pvt", json=pvt_payload(99999, [300] * 10)).status_code == 404
-    assert client.post("/api/self-reports", json={"crew_member_id": 1, "fatigue": 11}).status_code == 422
+    assert client.post("/api/self-reports", json={"crew_member_id": 1, "tlx_mental": 150}).status_code == 422
     assert client.post("/api/schedule/optimize", json={"min_rest_hours": 40}).status_code == 422
     assert client.post("/api/schedule/optimize", json={"crew_restrictions": {"NOPE": {}}}).status_code == 422
 
 
 def test_self_report_raw_tlx(client):
     cid = crew_id(client, "LOCAL")
-    body = {"crew_member_id": cid, "sleep_hours": 7, "fatigue": 3, "recovery": 7,
+    body = {"crew_member_id": cid,
             **{f"tlx_{k}": v for k, v in zip(["mental", "physical", "temporal", "performance", "effort", "frustration"],
                                               [60, 30, 40, 20, 50, 10])}}
     r = client.post("/api/self-reports", json=body).json()
     assert r["reports"][-1]["raw_tlx"] == 35.0
     assert r["reports"][-1]["provenance"] == "local_measurement"
+    assert r["reports"][-1]["sleep_hours"] is None  # sleep is never self-reported
 
 
 def test_optimize_and_compare(client):

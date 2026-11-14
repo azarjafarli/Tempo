@@ -29,7 +29,7 @@ export default function PerformanceLab() {
   const tabs: { id: Tab; label: string; icon: typeof Keyboard }[] = [
     { id: "pvt", label: "A · Vigilant attention", icon: Keyboard },
     { id: "motor", label: "B · Precision motor", icon: Crosshair },
-    { id: "checkin", label: "C · Contextual check-in", icon: ClipboardCheck },
+    { id: "checkin", label: "C · Workload check-in", icon: ClipboardCheck },
   ];
 
   return (

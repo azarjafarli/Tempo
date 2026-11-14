@@ -109,10 +109,8 @@ class MotorSessionIn(SessionBase):
 
 
 class SelfReportIn(BaseModel):
+    """Self-reported workload (the six NASA-TLX dimensions). Sleep and recovery are measured by the wearable."""
     crew_member_id: int
-    sleep_hours: Optional[float] = Field(default=None, ge=0, le=24)
-    fatigue: Optional[float] = Field(default=None, ge=0, le=10)
-    recovery: Optional[float] = Field(default=None, ge=0, le=10)
     tlx_mental: Optional[float] = Field(default=None, ge=0, le=100)
     tlx_physical: Optional[float] = Field(default=None, ge=0, le=100)
     tlx_temporal: Optional[float] = Field(default=None, ge=0, le=100)
