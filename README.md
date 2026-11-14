@@ -64,26 +64,30 @@ Interactive API docs are at <http://127.0.0.1:8000/docs> while the server runs.
 2. **Mission Overview** — fictional crew member VEGA, mission day 3/5, last EVA (7 h 00 min, day 2), next EVA,
    the five-day EVA timeline, latest assessments vs baseline, data-quality table, latest self-reported check-in
    and next steps. There is deliberately **no single "health %" or readiness score**.
-3. **Review previous assessments** — click *Open Recovery Analysis*. The latest synthetic vigilance session is
+3. **Mission control** — the crew roster a flight surgeon would use: each crew member's latest results vs
+   their own baseline (with sparklines), flagged metrics, self-reported check-ins, EVA workload and rest before
+   the next EVA. Flagged crew are listed first. Select a row for details, record a reviewer decision and note,
+   or jump to the planner with that crew member preselected. There is no combined health score.
+4. **Review previous assessments** — click *Open Recovery Analysis*. The latest synthetic vigilance session is
    *Functional change worth reviewing*. Expand **Why was this flagged?** to see the exact observations
    (value, baseline median, MAD, difference, robust z, rule thresholds). Note the interrupted session in the session log (Day 2 · 19:12): a
    simulated **interrupted** run that is stored but never interpreted.
-4. **Complete a real assessment** — *Performance Lab → A · Vigilant attention*, mode *Demo (1 min)*,
+5. **Complete a real assessment** — *Performance Lab → A · Vigilant attention*, mode *Demo (1 min)*,
    click **Start**, press **Space** whenever the amber target appears. Try switching tabs once to see the run
    invalidated. Your result is saved as a *real local measurement* and immediately compared with the baseline.
    (Comparing your real result with VEGA's synthetic baseline is labelled as a workflow demonstration only;
    select **Local participant (you)** to build a genuine personal baseline.)
-5. Optionally run **B · Precision motor** (12 targets) and **C · Contextual check-in** (sleep, fatigue,
+6. Optionally run **B · Precision motor** (12 targets) and **C · Contextual check-in** (sleep, fatigue,
    recovery, six NASA-TLX dimensions → *Raw TLX*).
-6. **EVA Mission Planner** — choose **2 · Reduced workload**, restricted astronaut *VEGA*, *3 h/day*, add a
+7. **EVA Mission Planner** — choose **2 · Reduced workload**, restricted astronaut *VEGA*, *3 h/day*, add a
    reviewer note, click **Run optimization**. Compare the original and optimized schedules side by side:
    red outlines mark original conflicts, dashed blocks were changed, each change has a written explanation,
    plus postponed tasks, rest intervals and the solver status.
-7. Choose **3 · Longer rest interval** (18 h) and run again: tasks are retimed to honor the rest window.
-8. **Infeasibility demo:** *Reduced workload* → restricted astronaut **ORION**, mark **D4** unavailable → run.
+8. Choose **3 · Longer rest interval** (18 h) and run again: tasks are retimed to honor the rest window.
+9. **Infeasibility demo:** *Reduced workload* → restricted astronaut **ORION**, mark **D4** unavailable → run.
    ORION is the only crew member qualified for the fixed comms-mast task on day 4, so the solver reports
    **INFEASIBLE** and lists the minimal conflicting requirements.
-9. **Research & Data Sources** — NASA EVA CSV import (detected columns, mapping, rejected rows, SHA-256),
+10. **Research & Data Sources** — NASA EVA CSV import (detected columns, mapping, rejected rows, SHA-256),
    duration charts, source list with what each supports, provenance categories and limitations.
 
 ---
@@ -110,7 +114,7 @@ eva-recovery/
 │   └── tests/                   pytest suite
 └── frontend/                    React 18 + TypeScript + Vite + Tailwind + Recharts + Lucide
     └── src/
-        ├── screens/             MissionOverview, PerformanceLab, RecoveryAnalysis, MissionPlanner, Research
+        ├── screens/             MissionOverview, MissionControl, PerformanceLab, RecoveryAnalysis, MissionPlanner, Research
         ├── assessments/         PvtTask, MotorTask, CheckIn
         ├── components/          UI kit, evaluation tables, "Why was this flagged?"
         └── lib/                 API client, PVT/motor client logic (+ Vitest tests), formatting
@@ -119,7 +123,7 @@ eva-recovery/
 ### Database (SQLite, `backend/data/eva_recovery.db`)
 
 `crew_members`, `missions`, `eva_activities` (+ `eva_activity_crew`), `eva_tasks`, `assessment_sessions`,
-`observations` (every individual trial, click and pointer sample), `self_reports`, `analysis_results`
+`observations` (every individual trial, click and pointer sample), `self_reports`, `reviewer_notes`, `analysis_results`
 (derived-analysis audit log with rule version), `schedule_scenarios`, `data_imports`, `nasa_eva_records`.
 Every row carries a provenance category.
 
@@ -128,6 +132,8 @@ Every row carries a provenance category.
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/api/mission`, `/api/overview?crew_id=` | Mission, crew, overview metrics |
+| GET | `/api/mission-control` | Reviewer roster: every crew member's results, check-ins, EVA workload, notes |
+| GET/POST | `/api/review-notes` | Reviewer decisions and notes (human-entered) |
 | POST | `/api/demo/load` | Reload the synthetic mission (`declining`/`stable`) |
 | GET | `/api/assessments?crew_id=&type=`, `/api/assessments/{id}` | Sessions with raw observations |
 | POST | `/api/assessments/pvt`, `/api/assessments/motor` | Save a real browser assessment (re-scored server-side) |
@@ -197,12 +203,12 @@ Every row carries a provenance category.
 powershell -ExecutionPolicy Bypass -File .\test.ps1
 ```
 
-* **Backend (pytest, 54 tests):** reaction-time scoring, anticipation/false starts, interrupted/incomplete
+* **Backend (pytest, 56 tests):** reaction-time scoring, anticipation/false starts, interrupted/incomplete
   handling, motor scoring and resize invariance, equivalent-difficulty variants, baseline comparison,
   missing/insufficient baselines, zero-variance floor, robustness to outliers, invalid-session refusal,
   schedule constraints (limits, rest, qualifications, dependencies, fixed and completed tasks),
   infeasible schedules with minimal explanation, data provenance labelling, synthetic-data determinism,
-  NASA CSV import/rejection, and API validation and persistence.
+  NASA CSV import/rejection, the mission-control roster and reviewer notes, and API validation and persistence.
 * **Frontend (Vitest, 18 tests):** client-side reaction-time scoring, keypress gating (auto-repeat, double
   presses, false starts), ISI bounds, normalized coordinates, hit testing, motor preview, provenance and
   category labels.

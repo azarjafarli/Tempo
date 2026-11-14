@@ -1,9 +1,10 @@
-import { Activity, BookOpen, CalendarRange, FlaskConical, Gauge, LineChart, Loader2, Rocket, ShieldAlert } from "lucide-react";
+import { Activity, BookOpen, CalendarRange, FlaskConical, Gauge, LineChart, Loader2, Rocket, ShieldAlert, Stethoscope } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { cx, Select } from "./components/ui";
 import { AppCtx, type Screen } from "./context";
 import { api } from "./lib/api";
 import type { Crew, Mission } from "./lib/types";
+import MissionControl from "./screens/MissionControl";
 import MissionOverview from "./screens/MissionOverview";
 import PerformanceLab from "./screens/PerformanceLab";
 import RecoveryAnalysis from "./screens/RecoveryAnalysis";
@@ -12,6 +13,7 @@ import Research from "./screens/Research";
 
 const NAV: { id: Screen; label: string; icon: typeof Gauge }[] = [
   { id: "overview", label: "Mission overview", icon: Gauge },
+  { id: "control", label: "Mission control", icon: Stethoscope },
   { id: "lab", label: "Performance lab", icon: Activity },
   { id: "analysis", label: "Recovery analysis", icon: LineChart },
   { id: "planner", label: "EVA mission planner", icon: CalendarRange },
@@ -153,6 +155,7 @@ export default function App() {
             {selected && (
               <div key={`${screen}-${version}`}>
                 {screen === "overview" && <MissionOverview />}
+                {screen === "control" && <MissionControl />}
                 {screen === "lab" && <PerformanceLab />}
                 {screen === "analysis" && <RecoveryAnalysis />}
                 {screen === "planner" && <MissionPlanner />}

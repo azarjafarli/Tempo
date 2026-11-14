@@ -14,7 +14,7 @@
   NASA logos, flags, patches or protected branding were reproduced.
 
 ## How AI output was checked
-* Automated tests (54 pytest, 18 Vitest) were written and run; all pass at delivery.
+* Automated tests (56 pytest, 18 Vitest) were written and run; all pass at delivery.
 * The app was run end to end in a headless browser: overview, a real reaction-time run with simulated key
   presses, a motor run, reduced-workload and longer-rest optimizations, and the data pages.
 * Statistical rules and limitations are documented so humans can review them.

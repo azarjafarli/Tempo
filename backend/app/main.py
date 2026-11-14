@@ -153,6 +153,13 @@ class OptimizeIn(BaseModel):
     reviewer_note: Optional[str] = Field(default=None, max_length=300)
 
 
+class ReviewerNoteIn(BaseModel):
+    crew_member_id: int
+    author: str = Field(min_length=1, max_length=80)
+    status: Literal["reviewed_no_action", "follow_up", "restriction_to_model"]
+    note: str = Field(min_length=1, max_length=1000)
+
+
 class CsvImportIn(BaseModel):
     filename: str = Field(max_length=200)
     content: str = Field(max_length=6_000_000)
@@ -316,6 +323,26 @@ def analysis(crew_id: int, type: Literal["pvt", "motor"] = "pvt", session_id: Op
              jdump({"metrics": [{k: m[k] for k in ("metric", "value", "difference", "robust_z", "category")}
                                 for m in ev["metrics"]]})))
     return res
+
+
+# ---- mission control (reviewer roster)
+@app.get("/api/mission-control")
+def mission_control(conn: sqlite3.Connection = Depends(get_conn)) -> dict[str, Any]:
+    return services.mission_control(conn)
+
+
+@app.get("/api/review-notes")
+def review_notes(crew_id: int, conn: sqlite3.Connection = Depends(get_conn)) -> list[dict[str, Any]]:
+    _require_crew(conn, crew_id)
+    return services.list_reviewer_notes(conn, crew_id)
+
+
+@app.post("/api/review-notes", status_code=201)
+def add_review_note(body: ReviewerNoteIn, conn: sqlite3.Connection = Depends(get_conn)) -> dict[str, Any]:
+    _require_crew(conn, body.crew_member_id)
+    conn.execute("INSERT INTO reviewer_notes (crew_member_id, created_at, author, status, note) VALUES (?,?,?,?,?)",
+                 (body.crew_member_id, _now(), body.author.strip(), body.status, body.note.strip()))
+    return {"notes": services.list_reviewer_notes(conn, body.crew_member_id)}
 
 
 # ---- planner

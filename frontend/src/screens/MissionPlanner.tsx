@@ -1,6 +1,7 @@
 import { AlertOctagon, CheckCircle2, History, Lock, Pencil, Play, Scale, ShieldAlert, Undo2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Button, Card, cx, DemoScenarioBanner, Loading, Notice, NumberField, ProvenanceBadge, Select } from "../components/ui";
+import { useApp } from "../context";
 import { api } from "../lib/api";
 import { hhmm } from "../lib/format";
 import type { Crew, Mission, OptimizeResult, Placement, PlanView, Task } from "../lib/types";
@@ -27,10 +28,11 @@ const PRI_STYLE: Record<string, string> = {
 export default function MissionPlanner() {
   const [data, setData] = useState<TasksResp | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const { params } = useApp();
   const [kind, setKind] = useState<Kind>("reduced_workload");
   const [maxH, setMaxH] = useState(7.5);
   const [rest, setRest] = useState(12);
-  const [crewCode, setCrewCode] = useState("VEGA");
+  const [crewCode, setCrewCode] = useState(params.crew || "VEGA");
   const [crewMax, setCrewMax] = useState(3);
   const [unavail, setUnavail] = useState<number[]>([]);
   const [note, setNote] = useState("");

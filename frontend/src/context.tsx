@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react";
 import type { Crew, Mission } from "./lib/types";
 
-export type Screen = "overview" | "lab" | "analysis" | "planner" | "research";
+export type Screen = "overview" | "control" | "lab" | "analysis" | "planner" | "research";
 
 export interface AppState {
   mission: Mission | null;

@@ -207,3 +207,88 @@ def overview(conn: sqlite3.Connection, crew_id: int | None = None) -> dict[str, 
         "assessments": assessments, "data_quality": quality, "latest_self_report": latest_report,
         "next_steps": next_steps,
     }
+
+
+REVIEW_STATUSES = {
+    "reviewed_no_action": "Reviewed, no action",
+    "follow_up": "Follow up with crew member",
+    "restriction_to_model": "Model a planning restriction",
+}
+
+
+def list_reviewer_notes(conn: sqlite3.Connection, crew_id: int) -> list[dict[str, Any]]:
+    rows = conn.execute("SELECT * FROM reviewer_notes WHERE crew_member_id=? ORDER BY created_at DESC, id DESC",
+                        (crew_id,)).fetchall()
+    return [{**dict(r), "status_label": REVIEW_STATUSES.get(r["status"], r["status"])} for r in rows]
+
+
+def _eva_workload(evas: list[dict[str, Any]], code: str, current_day: int) -> dict[str, Any]:
+    mine = sorted((e for e in evas if code in e["crew"]), key=lambda e: (e["mission_day"], e["start_hour"]))
+    done = [e for e in mine if e["status"] == "completed"]
+    planned = [e for e in mine if e["status"] == "planned"]
+    last, nxt = (done[-1] if done else None), (planned[0] if planned else None)
+    rest = None
+    if last and nxt:
+        rest = round((nxt["mission_day"] * 24 + nxt["start_hour"]) - (last["mission_day"] * 24 + last["start_hour"] + last["duration_hours"]), 1)
+    consecutive = 0
+    days = {e["mission_day"] for e in done}
+    d = max(days) if days else None
+    while d is not None and d in days:
+        consecutive += 1
+        d -= 1
+    return {
+        "completed_evas": len(done), "planned_evas": len(planned),
+        "completed_hours": round(sum(e["duration_hours"] for e in done), 2),
+        "planned_hours": round(sum(e["duration_hours"] for e in planned), 2),
+        "last_eva": last, "next_eva": nxt, "rest_before_next_hours": rest,
+        "consecutive_eva_days_to_date": consecutive,
+        "evas": mine,
+    }
+
+
+def mission_control(conn: sqlite3.Connection) -> dict[str, Any]:
+    """Roster view for medical and operational reviewers: one entry per schedulable crew member.
+
+    No combined score is produced. Each crew member's results are compared only with their own baseline.
+    """
+    mission = get_mission(conn)
+    if mission is None:
+        return {"mission": None, "crew": []}
+    roster = []
+    for c in conn.execute("SELECT id FROM crew_members WHERE is_schedulable=1 ORDER BY id").fetchall():
+        ov = overview(conn, c["id"])
+        assessments = {}
+        for k, a in ov["assessments"].items():
+            full = analyze(conn, c["id"], k)
+            ev = full["evaluation"]
+            assessments[k] = {
+                "label": a["label"], "category": a["category"], "category_label": a["category_label"],
+                "baseline_n": a["baseline_n"], "baseline_status": a["baseline_status"],
+                "key_metric": a["key_metric"], "key_metric_result": a["key_metric_result"],
+                "flagged": [{"metric": m["metric"], "label": m["label"], "value": m["value"],
+                             "baseline_median": m["baseline"]["median"], "difference": m["difference"],
+                             "robust_z": m["robust_z"], "unit": m["unit"],
+                             "consecutive_sessions": (ev.get("persistence") or {}).get(m["metric"], 0),
+                             "observations": m["observations"]}
+                            for m in ev["metrics"] if m["flagged"]],
+                "series": a["series"], "trend": a["trend"],
+                "evaluated_session": a["evaluated_session"] and {k2: a["evaluated_session"][k2] for k2 in
+                                                                  ("id", "mission_time_days", "status", "provenance", "started_at")},
+                "invalid_sessions": sum(1 for h in full["history"] if h["status"] != "valid"),
+            }
+        notes = list_reviewer_notes(conn, c["id"])
+        n_review = sum(1 for a in assessments.values() if a["category"] == "change_worth_reviewing")
+        roster.append({
+            "crew": ov["crew"], "assessments": assessments, "self_reports": list_self_reports(conn, c["id"]),
+            "workload": _eva_workload(ov["all_evas"], ov["crew"]["code"], mission["current_day"]),
+            "data_quality": ov["data_quality"], "reviewer_notes": notes,
+            "latest_note": notes[0] if notes else None,
+            "assessments_flagged": n_review,
+            "needs_attention": n_review > 0 or any(a["category"] == "invalid_measurement" for a in assessments.values()),
+        })
+    roster.sort(key=lambda r: (-r["assessments_flagged"], not r["needs_attention"], r["crew"]["id"]))
+    return {
+        "mission": mission, "crew": roster, "review_statuses": REVIEW_STATUSES,
+        "notice": "For qualified medical and operational reviewers. Results are exploratory comparisons with each "
+                  "person's own baseline; they are not diagnoses and not fitness-for-duty determinations.",
+    }

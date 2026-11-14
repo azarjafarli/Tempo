@@ -87,3 +87,28 @@ def test_demo_load_and_nasa_endpoints(client):
     assert s["imported"] and s["records"] > 300
     bad = client.post("/api/nasa/eva/import", json={"filename": "x.csv", "content": "a,b\n1,2\n"})
     assert bad.status_code == 422
+
+
+def test_mission_control_roster(client):
+    mc = client.get("/api/mission-control").json()
+    codes = [r["crew"]["code"] for r in mc["crew"]]
+    assert sorted(codes) == ["LYRA", "ORION", "VEGA"]  # local participant is not a crew member
+    assert codes[0] == "VEGA"  # flagged crew member is listed first in the declining demo
+    vega = mc["crew"][0]
+    assert vega["assessments"]["pvt"]["category"] == "change_worth_reviewing"
+    assert vega["assessments"]["pvt"]["flagged"][0]["observations"]
+    assert "score" not in vega and "readiness" not in str(vega.keys())
+    w = vega["workload"]
+    assert w["completed_evas"] == 2 and w["planned_evas"] == 2
+    assert w["rest_before_next_hours"] == 16.5  # EVA 2 ends day 2 15:30 -> EVA 3 day 3 08:00
+    assert "not diagnoses" in mc["notice"]
+
+
+def test_reviewer_notes(client):
+    cid = crew_id(client, "VEGA")
+    r = client.post("/api/review-notes", json={"crew_member_id": cid, "author": "Dr. Test", "status": "follow_up",
+                                               "note": "Discuss sleep before EVA 3."})
+    assert r.status_code == 201 and r.json()["notes"][0]["status_label"] == "Follow up with crew member"
+    assert client.post("/api/review-notes", json={"crew_member_id": cid, "author": "x", "status": "unfit", "note": "n"}).status_code == 422
+    mc = client.get("/api/mission-control").json()
+    assert next(r for r in mc["crew"] if r["crew"]["code"] == "VEGA")["latest_note"]["author"] == "Dr. Test"

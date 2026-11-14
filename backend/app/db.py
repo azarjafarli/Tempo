@@ -181,6 +181,17 @@ CREATE TABLE IF NOT EXISTS data_imports (
     provenance          TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS reviewer_notes (
+    id                  INTEGER PRIMARY KEY,
+    crew_member_id      INTEGER NOT NULL REFERENCES crew_members(id) ON DELETE CASCADE,
+    created_at          TEXT NOT NULL,
+    author              TEXT NOT NULL,
+    status              TEXT NOT NULL,   -- reviewed_no_action | follow_up | restriction_to_model
+    note                TEXT NOT NULL,
+    provenance          TEXT NOT NULL DEFAULT 'local_measurement'
+);
+CREATE INDEX IF NOT EXISTS ix_notes_crew ON reviewer_notes(crew_member_id);
+
 CREATE TABLE IF NOT EXISTS nasa_eva_records (
     id                  INTEGER PRIMARY KEY,
     import_id           INTEGER NOT NULL REFERENCES data_imports(id) ON DELETE CASCADE,
