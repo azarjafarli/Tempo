@@ -176,6 +176,64 @@ def gen_motor(rng: np.random.Generator, variant: int, a: float, b: float, mt_f: 
     return clicks, path
 
 
+# Synthetic wearable nights (morning of each day). Individual baselines, then mission effects.
+WEARABLE_BASE = {
+    "VEGA": {"asleep": 428, "deep": 84, "rem": 102, "slp_hr": 51, "rhr": 58, "hrv": 63, "restless": 8},
+    "ORION": {"asleep": 412, "deep": 80, "rem": 96, "slp_hr": 54, "rhr": 61, "hrv": 54, "restless": 9},
+    "LYRA": {"asleep": 440, "deep": 90, "rem": 108, "slp_hr": 49, "rhr": 56, "hrv": 71, "restless": 7},
+}
+WEARABLE_DAYS = list(range(-13, CURRENT_DAY + 1))
+# VEGA mission-morning deltas by mission day (declining profile)
+VEGA_WEAR_DECLINE = {1: dict(asleep=-35, hrv=-6, rhr=2, slp_hr=3, restless=3, stage=0.95),
+                     2: dict(asleep=-75, hrv=-13, rhr=4, slp_hr=6, restless=6, stage=0.88),
+                     3: dict(asleep=-95, hrv=-17, rhr=5, slp_hr=8, restless=8, stage=0.82)}
+
+
+def gen_wearable_night(rng: np.random.Generator, base: dict[str, float], delta: dict[str, float]) -> dict[str, float]:
+    asleep = max(180.0, base["asleep"] + delta.get("asleep", 0) + rng.normal(0, 18))
+    stage = delta.get("stage", 1.0)
+    deep = max(20.0, base["deep"] * asleep / base["asleep"] * stage + rng.normal(0, 7))
+    rem = max(20.0, base["rem"] * asleep / base["asleep"] * stage + rng.normal(0, 9))
+    rhr = base["rhr"] + delta.get("rhr", 0) + rng.normal(0, 1.2)
+    return {
+        "asleep_min": round(asleep), "awake_min": round(max(10.0, 45 + rng.normal(0, 10) + delta.get("restless", 0) * 2)),
+        "deep_min": round(deep), "rem_min": round(rem), "light_min": round(max(0.0, asleep - deep - rem)),
+        "sleeping_hr": round(base["slp_hr"] + delta.get("slp_hr", 0) + rng.normal(0, 1.0), 1),
+        "resting_hr": round(rhr, 1),
+        "hrv_ms": round(max(15.0, base["hrv"] + delta.get("hrv", 0) + rng.normal(0, 3.5)), 1),
+        "restless_pct": round(max(1.0, base["restless"] + delta.get("restless", 0) + rng.normal(0, 1.5)), 1),
+    }
+
+
+def seed_wearable(conn: sqlite3.Connection, profile: str, crew_ids: dict[str, int] | None = None) -> int:
+    """Insert deterministic synthetic wearable nights for the fictional crew (idempotent per crew/day)."""
+    p_idx = PROFILES.index(profile)
+    if crew_ids is None:
+        crew_ids = {r[0]: r[1] for r in conn.execute("SELECT code, id FROM crew_members WHERE provenance='synthetic'")}
+    n_rows = 0
+    for ci, c in enumerate(CREW):
+        if c["code"] not in crew_ids:
+            continue
+        for d in WEARABLE_DAYS:
+            rng = _rng(p_idx, ci, 700 + d + 20)
+            delta: dict[str, float] = {}
+            if d >= 1:
+                delta = {"asleep": -15, "hrv": -2, "rhr": 1}  # mild mission effect for everyone
+                if c["code"] == "VEGA" and profile == "declining":
+                    delta = VEGA_WEAR_DECLINE[d]
+            n = gen_wearable_night(rng, WEARABLE_BASE[c["code"]], delta)
+            conn.execute(
+                "INSERT OR IGNORE INTO wearable_nights (crew_member_id, mission_day, sleep_start, asleep_min, awake_min, deep_min, rem_min, "
+                "light_min, sleeping_hr, resting_hr, hrv_ms, restless_pct, device, provenance) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'synthetic')",
+                (crew_ids[c["code"]], d, ts(d - 1 + 0.93), n["asleep_min"], n["awake_min"], n["deep_min"], n["rem_min"],
+                 n["light_min"], n["sleeping_hr"], n["resting_hr"], n["hrv_ms"], n["restless_pct"],
+                 "a simulated wrist wearable"))
+            n_rows += 1
+
+    return n_rows
+
+
 def _clear_synthetic(conn: sqlite3.Connection) -> None:
     conn.execute("DELETE FROM missions")
     conn.execute("DELETE FROM crew_members WHERE code != ?", (LOCAL_CODE,))
@@ -267,6 +325,8 @@ def load_demo(conn: sqlite3.Connection, profile: str = "declining") -> dict[str,
                        interruption_reason="browser tab lost focus after 41 s", completed=False, provenance="synthetic",
                        scenario_label=label + " · simulated interruption")
     n_sessions += 1
+
+    seed_wearable(conn, profile, crew_ids)
 
     # Self-reported context (synthetic)
     sr_days = [-8, -6, 1, 2, 3]

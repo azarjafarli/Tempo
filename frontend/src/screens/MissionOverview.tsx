@@ -2,6 +2,7 @@ import { ClipboardCheck, Database, ListChecks, Moon, Timer, User } from "lucide-
 import { useEffect, useState } from "react";
 import { CartesianGrid, ComposedChart, Line, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from "recharts";
 import { Button, Card, CategoryBadge, chartTheme, cx, DemoScenarioBanner, Loading, Notice, ProvenanceBadge, SelfReportedTag, Stat } from "../components/ui";
+import { WearableCard } from "../components/WearableScores";
 import { useApp } from "../context";
 import { api } from "../lib/api";
 import { fmt, hhmm, hoursToHM, missionTime, signed } from "../lib/format";
@@ -58,6 +59,8 @@ export default function MissionOverview() {
           <div className="lg:pl-6"><Stat label="Mission" value={`Day ${mission.current_day} of ${mission.num_days}`} sub={mission.name} /></div>
         </dl>
       </section>
+
+      <WearableCard w={data.wearable} who={crew.code === "LOCAL" ? "your" : crew.code} />
 
       <div className="grid gap-6 xl:grid-cols-2">
         {(["pvt", "motor"] as const).map((k) => (

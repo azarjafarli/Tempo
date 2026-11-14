@@ -181,6 +181,25 @@ CREATE TABLE IF NOT EXISTS data_imports (
     provenance          TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS wearable_nights (
+    id                  INTEGER PRIMARY KEY,
+    crew_member_id      INTEGER NOT NULL REFERENCES crew_members(id) ON DELETE CASCADE,
+    mission_day         INTEGER NOT NULL,   -- the morning this night ends on
+    sleep_start         TEXT,
+    asleep_min          REAL NOT NULL,
+    awake_min           REAL,
+    deep_min            REAL NOT NULL,
+    rem_min             REAL NOT NULL,
+    light_min           REAL,
+    sleeping_hr         REAL NOT NULL,
+    resting_hr          REAL NOT NULL,
+    hrv_ms              REAL NOT NULL,      -- overnight RMSSD
+    restless_pct        REAL NOT NULL,
+    device              TEXT,
+    provenance          TEXT NOT NULL,
+    UNIQUE (crew_member_id, mission_day)
+);
+
 CREATE TABLE IF NOT EXISTS reviewer_notes (
     id                  INTEGER PRIMARY KEY,
     crew_member_id      INTEGER NOT NULL REFERENCES crew_members(id) ON DELETE CASCADE,

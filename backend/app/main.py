@@ -19,7 +19,7 @@ from .analysis.motor import layout
 from .analysis.pvt import MODE_CONFIG
 from .db import connect, init_schema, jdump, jload
 from .provenance import PROVENANCE_CATEGORIES, REFERENCES
-from .seed import LOCAL_CODE, PROFILES, ensure_local_participant, load_demo
+from .seed import LOCAL_CODE, PROFILES, ensure_local_participant, load_demo, seed_wearable
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
@@ -52,8 +52,11 @@ def get_conn():
 def bootstrap(conn: sqlite3.Connection) -> None:
     init_schema(conn)
     ensure_local_participant(conn)
-    if store.get_mission(conn) is None:
+    m = store.get_mission(conn)
+    if m is None:
         load_demo(conn, "declining")
+    elif conn.execute("SELECT COUNT(*) FROM wearable_nights").fetchone()[0] == 0:
+        seed_wearable(conn, m["scenario_profile"])  # databases created before wearable data existed
     if not nasa_import.import_status(conn)["imported"] and nasa_import.BUNDLED_FILE.exists():
         nasa_import.import_bundled(conn)
     conn.commit()
@@ -323,6 +326,12 @@ def analysis(crew_id: int, type: Literal["pvt", "motor"] = "pvt", session_id: Op
              jdump({"metrics": [{k: m[k] for k in ("metric", "value", "difference", "robust_z", "category")}
                                 for m in ev["metrics"]]})))
     return res
+
+
+@app.get("/api/wearable/{crew_id}")
+def wearable(crew_id: int, conn: sqlite3.Connection = Depends(get_conn)) -> dict[str, Any]:
+    _require_crew(conn, crew_id)
+    return services.wearable_summary(conn, crew_id)
 
 
 # ---- mission control (reviewer roster)

@@ -15,6 +15,7 @@ const LIMITATIONS = [
   "The demo crew, mission and assessment histories are synthetic. The live measurements are of whoever uses this computer, not of astronauts.",
   "Scheduling restrictions are reviewer-chosen assumptions. The optimizer does not predict recovery or physiological state.",
   "Historical NASA EVA durations are reference context only. They are never used as labels for recovery, fatigue or injury.",
+  "Sleep score and readiness imitate Fitbit's published structure; Fitbit's formulas are proprietary, so ours are documented approximations. They are wellness indicators from synthetic device data, not medical scores.",
 ];
 
 export default function Research() {

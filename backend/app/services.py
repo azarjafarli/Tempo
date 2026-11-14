@@ -10,6 +10,7 @@ from .analysis.baseline import (
     CATEGORY_INVALID, CATEGORY_LABELS, CATEGORY_REVIEW, METRIC_RULES, evaluate_session, rules_documentation,
     theil_sen_trend,
 )
+from .analysis import wearable as wear
 from .store import get_crew_member, get_mission, list_self_reports, list_sessions, pvt_rts
 
 
@@ -205,6 +206,7 @@ def overview(conn: sqlite3.Connection, crew_id: int | None = None) -> dict[str, 
         "last_eva": completed[-1] if completed else None, "next_eva": planned[0] if planned else None,
         "eva_count": {"completed": len(completed), "planned": len(planned)},
         "assessments": assessments, "data_quality": quality, "latest_self_report": latest_report,
+        "wearable": wearable_summary(conn, cid),
         "next_steps": next_steps,
     }
 
@@ -281,7 +283,7 @@ def mission_control(conn: sqlite3.Connection) -> dict[str, Any]:
         roster.append({
             "crew": ov["crew"], "assessments": assessments, "self_reports": list_self_reports(conn, c["id"]),
             "workload": _eva_workload(ov["all_evas"], ov["crew"]["code"], mission["current_day"]),
-            "data_quality": ov["data_quality"], "reviewer_notes": notes,
+            "data_quality": ov["data_quality"], "reviewer_notes": notes, "wearable": ov["wearable"],
             "latest_note": notes[0] if notes else None,
             "assessments_flagged": n_review,
             "needs_attention": n_review > 0 or any(a["category"] == "invalid_measurement" for a in assessments.values()),
@@ -291,4 +293,19 @@ def mission_control(conn: sqlite3.Connection) -> dict[str, Any]:
         "mission": mission, "crew": roster, "review_statuses": REVIEW_STATUSES,
         "notice": "For qualified medical and operational reviewers. Results are exploratory comparisons with each "
                   "person's own baseline; they are not diagnoses and not fitness-for-duty determinations.",
+    }
+
+
+def wearable_summary(conn: sqlite3.Connection, crew_id: int) -> dict[str, Any]:
+    rows = [dict(r) for r in conn.execute(
+        "SELECT * FROM wearable_nights WHERE crew_member_id=? ORDER BY mission_day", (crew_id,)).fetchall()]
+    nights = wear.score_nights(rows) if rows else []
+    latest = nights[-1] if nights else None
+    return {
+        "available": bool(nights), "latest": latest,
+        "series": [{"mission_day": n["mission_day"], "sleep_score": n["sleep"]["score"],
+                    "readiness": n["readiness"]["score"], "hrv_ms": n["hrv_ms"], "resting_hr": n["resting_hr"],
+                    "asleep_h": round(n["asleep_min"] / 60, 2), "provenance": n["provenance"]} for n in nights],
+        "provenance": latest["provenance"] if latest else None,
+        "method": wear.documentation(),
     }

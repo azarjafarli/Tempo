@@ -63,7 +63,9 @@ Interactive API docs are at <http://127.0.0.1:8000/docs> while the server runs.
    To reload, pick a history in the sidebar (*Declining* or *Stable*) and click **Load Demo Mission**.
 2. **Mission Overview** — fictional crew member VEGA, mission day 3/5, last EVA (7 h 00 min, day 2), next EVA,
    the five-day EVA timeline, latest assessments vs baseline, data-quality table, latest self-reported check-in
-   and next steps. There is deliberately **no single "health %" or readiness score**.
+   and next steps. A **Sleep and readiness** card shows last night's sleep score and this morning's readiness
+   (0–100 each, with their components) from synthetic wearable data, modelled on how Fitbit describes its
+   scores. They are wellness indicators only and never feed the flags or the scheduler.
 3. **Mission control** — the crew roster a flight surgeon would use: each crew member's latest results vs
    their own baseline (with sparklines), flagged metrics, self-reported check-ins, EVA workload and rest before
    the next EVA. Flagged crew are listed first. Select a row for details, record a reviewer decision and note,
@@ -132,6 +134,7 @@ Every row carries a provenance category.
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/api/mission`, `/api/overview?crew_id=` | Mission, crew, overview metrics |
+| GET | `/api/wearable/{crew_id}` | Wearable nights with sleep score and readiness (0–100) and their components |
 | GET | `/api/mission-control` | Reviewer roster: every crew member's results, check-ins, EVA workload, notes |
 | GET/POST | `/api/review-notes` | Reviewer decisions and notes (human-entered) |
 | POST | `/api/demo/load` | Reload the synthetic mission (`declining`/`stable`) |
@@ -203,12 +206,12 @@ Every row carries a provenance category.
 powershell -ExecutionPolicy Bypass -File .\test.ps1
 ```
 
-* **Backend (pytest, 56 tests):** reaction-time scoring, anticipation/false starts, interrupted/incomplete
+* **Backend (pytest, 63 tests):** reaction-time scoring, anticipation/false starts, interrupted/incomplete
   handling, motor scoring and resize invariance, equivalent-difficulty variants, baseline comparison,
   missing/insufficient baselines, zero-variance floor, robustness to outliers, invalid-session refusal,
   schedule constraints (limits, rest, qualifications, dependencies, fixed and completed tasks),
   infeasible schedules with minimal explanation, data provenance labelling, synthetic-data determinism,
-  NASA CSV import/rejection, the mission-control roster and reviewer notes, and API validation and persistence.
+  NASA CSV import/rejection, the mission-control roster and reviewer notes, sleep-score and readiness calculations, and API validation and persistence.
 * **Frontend (Vitest, 18 tests):** client-side reaction-time scoring, keypress gating (auto-repeat, double
   presses, false starts), ISI bounds, normalized coordinates, hit testing, motor preview, provenance and
   category labels.

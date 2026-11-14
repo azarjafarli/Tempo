@@ -198,6 +198,7 @@ export interface Overview {
   data_quality: { assessment: string; sessions: number; invalid_or_incomplete: number; valid_baseline_sessions: number; baseline_status: string; latest_status: string | null }[];
   latest_self_report: SelfReport | null;
   next_steps: string[];
+  wearable: import("../components/WearableScores").WearableSummary;
 }
 
 export interface Task {

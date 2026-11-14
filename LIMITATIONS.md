@@ -37,6 +37,15 @@ EVA RECOVERY is a hackathon research prototype. Read this before drawing any con
     are not part of any flagging rule. Raw TLX is the unweighted mean of the six NASA-TLX ratings, not the
     full weighted procedure.
 
+## Sleep score and readiness
+15a. Both 0–100 scores imitate the published structure of Fitbit's Sleep Score (time asleep 50, deep and REM 25,
+     restoration 25) and Daily Readiness (HRV, resting heart rate and recent sleep vs personal baseline). Fitbit's
+     formulas are proprietary, so the point formulas, the equal readiness weights and the Low/Moderate/High cut-offs
+     (below 40, 40–69, 70 and above) are this project's own choices.
+15b. They are consumer-style wellness indicators from (currently synthetic) device data. They are not medical
+     scores, not an EVA fitness-for-duty determination, and are not used by the flagging rules or the scheduler.
+15c. Wrist wearables estimate sleep stages from movement and heart rate; stage accuracy is limited.
+
 ## Scheduler
 15. All restrictions are **reviewer-chosen planning assumptions**, not physiological predictions. The
     software never decides that anyone is unfit.

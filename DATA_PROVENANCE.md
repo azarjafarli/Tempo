@@ -41,6 +41,17 @@ Every record in the database carries exactly one provenance category, and the UI
   fingerprint over all synthetic observations is checked for determinism in the tests.
 * The UI shows an amber **DEMO SCENARIO** indicator whenever synthetic data is displayed.
 
+## Synthetic wearable data (sleep score and readiness)
+
+* One simulated night per crew member for each morning from pre-mission day −13 to mission day 3: time asleep,
+  deep/REM/light minutes, sleeping and resting heart rate, overnight HRV and restlessness. Stored in
+  `wearable_nights` with provenance `synthetic` and device "a simulated wrist wearable". Fixed seeds as above.
+* VEGA's declining history includes shorter, more restless sleep, lower HRV and higher resting heart rate on
+  mission days; the other crew members have only a mild mission effect.
+* The sleep score (0–100) and readiness (0–100) are computed from these nights by `app/analysis/wearable.py`.
+  The structure follows Fitbit's public description; the formulas are this project's approximations.
+* A real Fitbit/Google Health export importer is planned; imported nights would carry a separate, real-device label.
+
 ## Real local measurements
 
 * Saved exactly as recorded (raw events); the backend re-scores them but never alters or rescales them.

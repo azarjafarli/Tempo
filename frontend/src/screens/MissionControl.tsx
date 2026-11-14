@@ -2,6 +2,7 @@ import { CalendarRange, ClipboardList, LineChart as LineIcon, Moon, NotebookPen 
 import { useEffect, useMemo, useState } from "react";
 import { CartesianGrid, ComposedChart, Legend, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from "recharts";
 import { Button, Card, CategoryBadge, chartTheme, cx, DemoScenarioBanner, Loading, Notice, ProvenanceBadge, SelfReportedTag } from "../components/ui";
+import { WearableCard, WearableCell, type WearableSummary } from "../components/WearableScores";
 import { useApp } from "../context";
 import { api } from "../lib/api";
 import { fmt, hhmm, hoursToHM, missionTime, signed } from "../lib/format";
@@ -20,6 +21,7 @@ interface RosterEntry {
   crew: Crew; assessments: Record<"pvt" | "motor", RosterAssessment>; self_reports: SelfReport[];
   workload: { completed_evas: number; planned_evas: number; completed_hours: number; planned_hours: number; last_eva: EvaActivity | null; next_eva: EvaActivity | null; rest_before_next_hours: number | null; consecutive_eva_days_to_date: number; evas: EvaActivity[] };
   reviewer_notes: Note[]; latest_note: Note | null; assessments_flagged: number; needs_attention: boolean;
+  wearable: WearableSummary;
 }
 interface MissionControlResp { mission: Mission; crew: RosterEntry[]; review_statuses: Record<string, string>; notice: string }
 
@@ -62,7 +64,7 @@ export default function MissionControl() {
         </p>
       </div>
       <DemoScenarioBanner text="Fictional crew with synthetic assessment histories and self-reports." />
-      <Notice>{data.notice} There is deliberately no combined health or readiness score.</Notice>
+      <Notice>{data.notice} Sleep score and readiness are wearable-style wellness indicators (0–100); they never decide a flag or a schedule.</Notice>
 
       <Roster data={data} selected={entry?.crew.code ?? null} onSelect={setSelected} />
 
@@ -116,13 +118,14 @@ function Roster({ data, selected, onSelect }: { data: MissionControlResp; select
   return (
     <section className="overflow-hidden rounded-[10px] border border-line bg-panel" aria-label="Crew roster">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[1080px] text-[14px]">
+        <table className="w-full min-w-[1240px] text-[14px]">
           <caption className="sr-only">Crew roster. Select a row to see that crew member's details.</caption>
           <thead>
             <tr className="border-b border-line bg-deck text-left text-[13px] text-dim">
               <th className="py-2.5 pl-5 pr-3 font-medium">Crew member</th>
               <th className="px-3 font-medium">Vigilant attention <span className="text-faint">(median RT)</span></th>
               <th className="px-3 font-medium">Precision motor <span className="text-faint">(median movement)</span></th>
+              <th className="px-3 font-medium">Last night <span className="text-faint">(wearable)</span></th>
               <th className="px-3 font-medium">Latest check-in</th>
               <th className="px-3 font-medium">EVA load</th>
               <th className="px-3 font-medium">Data quality</th>
@@ -149,6 +152,7 @@ function Roster({ data, selected, onSelect }: { data: MissionControlResp; select
                   </td>
                   <td className="px-3 py-3.5"><MetricCell a={r.assessments.pvt} /></td>
                   <td className="px-3 py-3.5"><MetricCell a={r.assessments.motor} /></td>
+                  <td className="whitespace-nowrap px-3 py-3.5"><WearableCell w={r.wearable} /></td>
                   <td className="px-3 py-3.5">
                     {sr ? (
                       <div className="font-cond text-[15px] leading-snug tnum">
@@ -203,6 +207,8 @@ function CrewDetail({ entry, statuses, onNotesChanged, onAnalysis, onPlanner }: 
           <Button variant="primary" onClick={onPlanner}><CalendarRange size={15} /> Model a restriction for {entry.crew.code}</Button>
         </div>
       </div>
+
+      <WearableCard w={entry.wearable} who={entry.crew.code} />
 
       <div className="grid gap-5 xl:grid-cols-2">
         {(["pvt", "motor"] as const).map((k) => <MetricChart key={k} a={entry.assessments[k]} onOpen={() => onAnalysis(k)} />)}
