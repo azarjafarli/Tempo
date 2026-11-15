@@ -47,6 +47,7 @@ export default function RecoveryAnalysis() {
   const base = evalMetric?.baseline;
   const band = base?.median != null && base.scale != null ? [base.median - 3 * base.scale, base.median + 3 * base.scale] : null;
   const d = digitsFor(rule?.unit ?? "");
+  const missionValid = data.history.filter((h) => h.phase === "mission" && h.status === "valid").length;
 
   return (
     <div className="space-y-5">
@@ -127,8 +128,8 @@ export default function RecoveryAnalysis() {
                   <tr key={m.key} className="border-t border-line/60">
                     <td className="py-2 text-ink">{m.label}</td>
                     <td className="py-2 font-cond tnum">{t ? signed(t.slope_per_day, Math.max(dd, 1)) : "—"}</td>
-                    <td className="py-2 font-cond tnum text-dim">{t ? `${fmt(t.low, Math.max(dd, 1))} … ${fmt(t.high, Math.max(dd, 1))}` : "insufficient data"}</td>
-                    <td className="py-2 font-cond tnum text-dim">{t?.n_points ?? 0}</td>
+                    <td className="py-2 font-cond tnum text-dim">{t ? `${fmt(t.low, Math.max(dd, 1))} … ${fmt(t.high, Math.max(dd, 1))}` : `needs 4 sessions (has ${missionValid})`}</td>
+                    <td className="py-2 font-cond tnum text-dim">{t?.n_points ?? missionValid}</td>
                   </tr>
                 );
               })}
