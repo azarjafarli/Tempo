@@ -95,8 +95,8 @@ export default function App() {
               <circle cx="16" cy="16" r="3" fill="#1D2227" />
             </svg>
             <div className="leading-none">
-              <div className="font-cond text-[21px] font-bold text-ink">EVA Recovery</div>
-              <div className="mt-1 text-[12.5px] text-faint">Mission readiness lab</div>
+              <div className="font-cond text-[24px] font-bold text-ink">Tempo</div>
+              <div className="mt-1 text-[12.5px] text-faint">Lunar EVA readiness</div>
             </div>
           </div>
           <nav className="flex-1 px-3">

@@ -1,4 +1,4 @@
-# EVA RECOVERY - drop and recreate the database with the demo mission and NASA CSV
+# Tempo - drop and recreate the database with the demo mission and NASA CSV
 # Usage: powershell -ExecutionPolicy Bypass -File .\reset-db.ps1 [-Profile declining|stable]
 param([ValidateSet("declining","stable")][string]$Profile = "declining")
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path

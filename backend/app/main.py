@@ -1,4 +1,4 @@
-"""EVA RECOVERY — Mission Readiness Lab: FastAPI application."""
+"""Tempo: FastAPI application."""
 from __future__ import annotations
 
 import sqlite3
@@ -32,7 +32,7 @@ async def lifespan(_app: FastAPI):
     yield
 
 
-app = FastAPI(title="EVA RECOVERY — Mission Readiness Lab API", version="1.0.0", lifespan=lifespan,
+app = FastAPI(title="Tempo API", version="1.0.0", lifespan=lifespan,
               description="Research and decision-support prototype. Not a clinically validated fitness-for-duty system.")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
                    allow_methods=["*"], allow_headers=["*"])

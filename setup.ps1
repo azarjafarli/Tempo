@@ -1,4 +1,4 @@
-# EVA RECOVERY - one-time setup (Windows PowerShell)
+# Tempo - one-time setup (Windows PowerShell)
 # Usage:  powershell -ExecutionPolicy Bypass -File .\setup.ps1
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path

@@ -67,7 +67,7 @@ export default function Research() {
             </ul>
           </div>
           <div>
-            <h3 className="font-cond text-[17px] font-semibold text-ink">What EVA Recovery adds</h3>
+            <h3 className="font-cond text-[17px] font-semibold text-ink">What Tempo adds</h3>
             <ol className="mt-2 space-y-3 text-[14px] text-dim">
               <li><strong className="text-ink">Closes the loop to the EVA schedule.</strong> A flagged change goes through a recorded reviewer decision into a constraint-based re-plan of the next spacewalks, or an explanation of why no plan works.</li>
               <li><strong className="text-ink">Built for high-tempo planetary EVAs.</strong> Several demanding surface EVAs in a few days, a precision motor task for suited hand work, and rest tracked between EVAs.</li>

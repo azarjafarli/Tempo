@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-// EVA RECOVERY design tokens: "surface procedures" — cool regolith paper, graphite ink,
+// Tempo design tokens: "surface procedures" — cool regolith paper, graphite ink,
 // steel blue for baselines and controls, international orange reserved for flags and "now".
 export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],

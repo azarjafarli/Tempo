@@ -1,7 +1,7 @@
 # RESEARCH.md — Sources and what each one actually supports
 
 This file lists the sources named in the project brief and states, conservatively, what each is used
-for in EVA RECOVERY. We do not reproduce data from the published references, and we do not claim that any
+for in Tempo. We do not reproduce data from the published references, and we do not claim that any
 of them validates this software.
 
 **Verification status (honest disclosure).** The build environment used to write this prototype could not
@@ -19,7 +19,7 @@ describes the source. Please open each link and confirm before citing it in a su
 
 ## Related NASA work: what already exists, and what this project adds
 
-NASA already measures astronaut cognition and alertness against each person's own baseline. EVA Recovery
+NASA already measures astronaut cognition and alertness against each person's own baseline. Tempo
 builds on that idea; it does not claim to invent it, and its tasks are not validated like NASA's.
 
 | Tool | What it is (from public sources) | Link |
@@ -28,13 +28,13 @@ builds on that idea; it does not claim to invent it, and its tasks are not valid
 | Reaction Self Test | 3-minute PVT-B reaction-time test (with sleep, stress and workload ratings) used on the ISS since 2009 to show astronauts when fatigue degrades their performance. | https://ntrs.nasa.gov/citations/20090029851 , https://spinoff.nasa.gov/Spinoff2013/hm_1.html |
 | Cognition | Ten brief validated tests developed for NASA (University of Pennsylvania); part of NASA's Behavioral Health and Performance Standard Measures on ISS. | https://www.med.upenn.edu/uep/cognition.html |
 
-**What EVA Recovery adds (as far as we could find in public sources):**
+**What Tempo adds (as far as we could find in public sources):**
 1. **Closing the loop to the EVA schedule.** The public tools report results to astronauts and flight
-   surgeons. EVA Recovery carries a flagged change through a documented reviewer decision into a constraint-based
+   surgeons. Tempo carries a flagged change through a documented reviewer decision into a constraint-based
    re-plan of the next spacewalks: reassignments, postponements, rest intervals, or a minimal explanation of why
    no plan works.
 2. **A focus on high-tempo planetary EVAs.** ISS tools were built for six-month stays with occasional EVAs.
-   EVA Recovery targets several demanding surface EVAs in a few days, adds a precision motor task (relevant to
+   Tempo targets several demanding surface EVAs in a few days, adds a precision motor task (relevant to
    suited hand work) and tracks rest between EVAs.
 3. **One reviewer workflow:** test, flag with visible evidence, doctor's review note, schedule what-if.
 

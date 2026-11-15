@@ -1,4 +1,4 @@
-# EVA RECOVERY - run all automated tests
+# Tempo - run all automated tests
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 Write-Host "== Backend (pytest) ==" -ForegroundColor Cyan
