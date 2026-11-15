@@ -19,6 +19,7 @@ from .analysis.motor import layout
 from .analysis.pvt import MODE_CONFIG
 from .db import connect, init_schema, jdump, jload
 from .provenance import PROVENANCE_CATEGORIES, REFERENCES
+from .demo_fill import fill_gaps
 from .seed import LOCAL_CODE, PROFILES, ensure_local_participant, load_demo, seed_wearable
 
 @asynccontextmanager
@@ -55,8 +56,10 @@ def bootstrap(conn: sqlite3.Connection) -> None:
     m = store.get_mission(conn)
     if m is None:
         load_demo(conn, "declining")
-    elif conn.execute("SELECT COUNT(*) FROM wearable_nights").fetchone()[0] == 0:
-        seed_wearable(conn, m["scenario_profile"])  # databases created before wearable data existed
+    else:
+        if conn.execute("SELECT COUNT(*) FROM wearable_nights").fetchone()[0] == 0:
+            seed_wearable(conn, m["scenario_profile"])  # databases created before wearable data existed
+        fill_gaps(conn, m["scenario_profile"])  # fills only areas that are still empty
     if not nasa_import.import_status(conn)["imported"] and nasa_import.BUNDLED_FILE.exists():
         nasa_import.import_bundled(conn)
     # The local participant's own Fitbit / Google Health files, if placed in data/private/google_health

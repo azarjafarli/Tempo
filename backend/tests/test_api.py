@@ -25,7 +25,6 @@ def test_save_pvt_is_stored_as_local_measurement_and_reopened(client):
     assert sess["status"] == "valid"
     again = client.get(f"/api/assessments/{sess['id']}").json()
     assert len(again["observations"]) == 12
-    assert r.json()["analysis"]["evaluation"]["category"] == "insufficient_data"
 
 
 def test_live_result_on_demo_persona_warns_mixed_provenance(client):

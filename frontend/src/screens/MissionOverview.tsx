@@ -43,7 +43,7 @@ export default function MissionOverview() {
 
         {!synthetic && (
           <div className="mt-7">
-            <Notice>This profile holds your own measurements recorded on this computer. It is not part of the mission schedule.</Notice>
+            <Notice>Your own profile. It is not part of the crew’s mission schedule.</Notice>
           </div>
         )}
 

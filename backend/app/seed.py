@@ -359,7 +359,10 @@ def load_demo(conn: sqlite3.Connection, profile: str = "declining") -> dict[str,
                 tlx_frustration=float(np.clip(round(20 + 6 * step + rng.normal(0, 4)), 0, 100)),
                 notes="Synthetic workload rating", provenance="synthetic")
 
-    return {"mission_id": mission_id, "profile": profile, "sessions_created": n_sessions, "seed": BASE_SEED,
+    from .demo_fill import clear_local_synthetic, fill_gaps
+    clear_local_synthetic(conn)
+    filled = fill_gaps(conn, profile)
+    return {"mission_id": mission_id, "profile": profile, "sessions_created": n_sessions, "seed": BASE_SEED, "filled": filled,
             "fingerprint": synthetic_fingerprint(conn)}
 
 

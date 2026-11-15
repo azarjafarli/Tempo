@@ -7,13 +7,13 @@ if not exist "backend\.venv\Scripts\python.exe" (
   if errorlevel 1 ( echo Setup failed - see messages above. & pause & exit /b 1 )
 )
 rem Rebuild the interface whenever its source has changed (marker file records the build version).
-if not exist "frontend\dist\.build-v11" (
+if not exist "frontend\dist\.build-v12" (
   echo Building the interface...
   pushd frontend
   call npm install
   call npm run build
   if errorlevel 1 ( popd & echo Frontend build failed - see messages above. & pause & exit /b 1 )
-  echo v11> dist\.build-v11
+  echo v12> dist\.build-v12
   popd
 )
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0start.ps1"

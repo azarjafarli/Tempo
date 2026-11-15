@@ -43,7 +43,15 @@ export default function MissionPlanner() {
 
   const load = () => api.get<TasksResp>("/api/schedule/tasks").then((d) => { setData(d); setMaxH(d.defaults.max_eva_hours); }).catch((e) => setErr(e.message));
   const loadHistory = () => api.get<typeof history>("/api/schedule/scenarios").then(setHistory).catch(() => undefined);
-  useEffect(() => { void load(); void loadHistory(); }, []);
+  useEffect(() => {
+    void load();
+    // Open a saved scenario on arrival so the comparison is never empty (prefer the reduced-workload one).
+    api.get<typeof history>("/api/schedule/scenarios").then((h) => {
+      setHistory(h);
+      const pick = h.find((x) => x.kind === "reduced_workload") ?? h[0];
+      if (pick && !params.crew) api.get<OptimizeResult>(`/api/schedule/scenarios/${pick.id}`).then((r) => setResult((cur) => cur ?? r)).catch(() => undefined);
+    }).catch(() => undefined);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const applyPreset = (k: Kind) => {
     setKind(k);

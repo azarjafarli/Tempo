@@ -44,6 +44,14 @@ references and hypothetical scenarios; synthetic records are not labelled on scr
 * The interface does not label synthetic data on screen; the `provenance` column is kept on every record, and
   this document is the reference for what is simulated.
 
+## Filled demo areas (synthetic)
+
+`app/demo_fill.py` fills areas that would otherwise be empty, all stored as synthetic: one reviewer note per
+fictional crew member (from a fictional flight surgeon), three saved planner scenarios, and, for the local
+participant only when they have no real sessions of their own, 5 baseline + 4 recent reaction-time and motor
+sessions and 4 workload ratings. Fake sessions are never mixed with real ones, and the user's imported wearable
+data is never invented or changed.
+
 ## What is self-reported
 
 Only perceived workload: the six NASA-TLX ratings (Raw TLX). Sleep, recovery and other health signals are

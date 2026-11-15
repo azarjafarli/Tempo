@@ -219,7 +219,7 @@ REVIEW_STATUSES = {
 
 
 def list_reviewer_notes(conn: sqlite3.Connection, crew_id: int) -> list[dict[str, Any]]:
-    rows = conn.execute("SELECT * FROM reviewer_notes WHERE crew_member_id=? ORDER BY created_at DESC, id DESC",
+    rows = conn.execute("SELECT * FROM reviewer_notes WHERE crew_member_id=? ORDER BY id DESC",
                         (crew_id,)).fetchall()
     return [{**dict(r), "status_label": REVIEW_STATUSES.get(r["status"], r["status"])} for r in rows]
 

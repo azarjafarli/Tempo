@@ -217,7 +217,7 @@ Every row carries a provenance category.
 powershell -ExecutionPolicy Bypass -File .\test.ps1
 ```
 
-* **Backend (pytest, 70 tests):** reaction-time scoring, anticipation/false starts, interrupted/incomplete
+* **Backend (pytest, 72 tests):** reaction-time scoring, anticipation/false starts, interrupted/incomplete
   handling, motor scoring and resize invariance, equivalent-difficulty variants, baseline comparison,
   missing/insufficient baselines, zero-variance floor, robustness to outliers, invalid-session refusal,
   schedule constraints (limits, rest, qualifications, dependencies, fixed and completed tasks),

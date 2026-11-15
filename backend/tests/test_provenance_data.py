@@ -98,3 +98,25 @@ def test_health_data_is_not_self_reported(db):
                    "OR recovery IS NOT NULL").fetchone()[0]
     assert n == 0
     assert db.execute("SELECT COUNT(*) FROM self_reports WHERE raw_tlx IS NOT NULL").fetchone()[0] > 0
+
+
+def test_demo_gaps_filled(db):
+    lid = db.execute("SELECT id FROM crew_members WHERE code='LOCAL'").fetchone()[0]
+    assert db.execute("SELECT COUNT(*) FROM assessment_sessions WHERE crew_member_id=? AND provenance='synthetic'", (lid,)).fetchone()[0] == 18
+    assert db.execute("SELECT COUNT(*) FROM self_reports WHERE crew_member_id=?", (lid,)).fetchone()[0] == 4
+    assert db.execute("SELECT COUNT(*) FROM reviewer_notes WHERE provenance='synthetic'").fetchone()[0] == 3
+    assert db.execute("SELECT COUNT(*) FROM schedule_scenarios").fetchone()[0] == 3
+    assert db.execute("SELECT COUNT(*) FROM device_daily").fetchone()[0] == 0  # never invents wearable data for the user
+
+
+def test_fake_local_data_never_mixes_with_real(db):
+    from app.demo_fill import clear_local_synthetic, fill_local
+    from app.store import create_pvt_session
+    lid = db.execute("SELECT id FROM crew_members WHERE code='LOCAL'").fetchone()[0]
+    clear_local_synthetic(db)
+    create_pvt_session(db, crew_member_id=lid, mode="demo", phase="baseline", mission_day=None, mission_time_days=0,
+                       started_at="2026-11-14T10:00:00+00:00", completed_at=None,
+                       trials=[{"kind": "response", "t_ms": i * 1000, "rt_ms": 300} for i in range(10)],
+                       interrupted=False, interruption_reason=None, completed=True, provenance="local_measurement")
+    fill_local(db)
+    assert db.execute("SELECT COUNT(*) FROM assessment_sessions WHERE crew_member_id=? AND provenance='synthetic'", (lid,)).fetchone()[0] == 0
