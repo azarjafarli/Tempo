@@ -1,5 +1,5 @@
 import { AlertTriangle, ChevronDown, FlaskConical, Info, Loader2 } from "lucide-react";
-import { useId, useState, type ReactNode } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
 import { CATEGORY_STYLE, PROVENANCE_STYLE } from "../lib/format";
 import type { Category, Provenance } from "../lib/types";
 
@@ -147,19 +147,35 @@ export function Select<T extends string | number>({ label, value, onChange, opti
   );
 }
 
-export function NumberField({ label, value, onChange, min, max, step = 0.5, suffix }: {
+export function NumberField({ label, value, onChange, min, max, suffix }: {
   label: string; value: number; onChange: (v: number) => void; min: number; max: number; step?: number; suffix?: string;
 }) {
   const id = useId();
+  // Keep the typed text separately so the box can be empty or half-typed; clamp only when the user leaves the field.
+  const [text, setText] = useState(String(value));
+  useEffect(() => { setText((t) => (parseFloat(t) === value ? t : String(value))); }, [value]);
+  const commit = () => {
+    const v = parseFloat(text.replace(",", "."));
+    const next = Number.isFinite(v) ? Math.min(max, Math.max(min, v)) : value;
+    setText(String(next));
+    onChange(next);
+  };
   return (
     <label htmlFor={id} className="flex flex-col gap-1 text-[13px] text-dim">
       <span>{label}</span>
       <div className="flex items-center gap-2">
-        <input id={id} type="number" value={value} min={min} max={max} step={step}
-          onChange={(e) => { const v = parseFloat(e.target.value); if (Number.isFinite(v)) onChange(Math.min(max, Math.max(min, v))); }}
+        <input id={id} type="text" inputMode="decimal" value={text}
+          onChange={(e) => {
+            setText(e.target.value);
+            const v = parseFloat(e.target.value.replace(",", "."));
+            if (Number.isFinite(v) && v >= min && v <= max) onChange(v);
+          }}
+          onBlur={commit} onKeyDown={(e) => { if (e.key === "Enter") commit(); }}
+          aria-describedby={`${id}-range`}
           className="w-24 rounded-[6px] border border-line bg-panel px-3 py-2 font-cond tnum text-[16px] text-ink focus:border-cyan focus:outline-none focus:ring-1 focus:ring-cyan" />
         {suffix && <span className="text-dim">{suffix}</span>}
       </div>
+      <span id={`${id}-range`} className="text-[11.5px] text-faint">{min}–{max}{suffix ? ` ${suffix}` : ""}</span>
     </label>
   );
 }

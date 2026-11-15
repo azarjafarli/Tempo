@@ -61,11 +61,15 @@ export default function MissionPlanner() {
     if (k === "longer_rest") { setRest(18); setUnavail([]); }
   };
 
+  const loosened = maxH >= 7 && rest <= 16.5 && !(kind === "reduced_workload" && (crewMax < 7 || unavail.length > 0));
+
   const run = async () => {
     setRunning(true);
     setErr(null);
     const restrictions = kind === "reduced_workload" ? { [crewCode]: { max_eva_hours: crewMax, unavailable_days: unavail } } : {};
-    const name = kind === "original" ? "Original plan" : kind === "reduced_workload" ? `${crewCode} limited to ${crewMax} h/day${unavail.length ? `, off day ${unavail.join(",")}` : ""}` : `Minimum rest ${rest} h`;
+    const parts = [`max ${maxH} h/day`, `rest ≥ ${rest} h`];
+    if (kind === "reduced_workload") parts.unshift(`${crewCode} limited to ${crewMax} h/day${unavail.length ? `, off day ${unavail.join(",")}` : ""}`);
+    const name = parts.join(", ");
     try {
       const r = await api.post<OptimizeResult>("/api/schedule/optimize", {
         name, kind, max_eva_hours: maxH, min_rest_hours: rest, crew_restrictions: restrictions, reviewer_note: note || null,
@@ -131,6 +135,13 @@ export default function MissionPlanner() {
           <input value={note} onChange={(e) => setNote(e.target.value)} maxLength={300} placeholder="e.g. Flight surgeon review after flagged vigilance change — exploring reduced load"
             className="rounded-lg border border-line bg-deck px-3 py-2 text-sm text-ink placeholder:text-faint focus:border-cyan focus:outline-none focus:ring-1 focus:ring-cyan" />
         </label>
+        {loosened && (
+          <div className="mt-4"><Notice>
+            These limits are looser than the current plan needs (it uses at most 7 EVA hours a day and has at least
+            16.5 h of rest between EVA days), so the optimizer will keep the plan unchanged. Tighten them to see changes,
+            for example a maximum of 5 h or a minimum rest of 18 h.
+          </Notice></div>
+        )}
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <Button onClick={run} disabled={running}><Play size={15} /> {running ? "Optimizing…" : "Run optimization"}</Button>
           {err && <span className="text-sm text-rose">{err}</span>}
@@ -179,6 +190,9 @@ function ResultView({ result, crew, numDays, currentDay }: { result: OptimizeRes
             <span className="ml-auto font-cond tnum text-xs text-dim">objective {result.objective.total} = postpone {result.objective.postponement_cost} + reassign {result.objective.reassignment_cost} + disruption {result.objective.disruption_cost}{result.objective.proven_optimal ? " · proven optimal" : ""}</span>
           )}
         </div>
+        {result.feasible && result.changes.length === 0 && (
+          <div className="mt-3"><Notice>No changes were needed: the original plan already meets every limit in this scenario. Only stricter limits make the optimizer move, reassign or postpone tasks.</Notice></div>
+        )}
         {result.reviewer_note && <p className="mt-3 text-xs text-dim">Reviewer note: “{result.reviewer_note}”</p>}
         <p className="mt-2 text-xs text-faint">{result.assumption_notice}</p>
         {!result.feasible && result.infeasibility && (
