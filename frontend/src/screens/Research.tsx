@@ -1,9 +1,7 @@
-import { BookOpen, Database, ExternalLink, FileUp, Layers, RefreshCw, Watch } from "lucide-react";
+import { BookOpen, Database, ExternalLink, FileUp, Layers, RefreshCw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Button, Card, chartTheme, Loading, Notice, ProvenanceBadge, Stat } from "../components/ui";
-import { type WearableSummary } from "../components/WearableScores";
-import { useApp } from "../context";
 import { api } from "../lib/api";
 import type { NasaSummary, Provenance, Reference } from "../lib/types";
 
@@ -145,8 +143,6 @@ export default function Research() {
         )}
       </Card>
 
-      <DeviceImportCard />
-
       <Card title="Sources and what each supports" icon={<BookOpen size={15} />}>
           <ul className="grid gap-3 md:grid-cols-2">
             {prov?.references.filter((r) => r.relation !== "related_work").map((r) => (
@@ -164,40 +160,3 @@ export default function Research() {
   );
 }
 
-function DeviceImportCard() {
-  const { crew, refresh } = useApp();
-  const local = crew.find((c) => c.code === "LOCAL");
-  const [w, setW] = useState<WearableSummary | null>(null);
-  const [msg, setMsg] = useState<{ tone: "info" | "error"; text: string } | null>(null);
-  const [busy, setBusy] = useState(false);
-  const ref = useRef<HTMLInputElement>(null);
-  const load = () => { if (local) api.get<WearableSummary>(`/api/wearable/${local.id}`).then(setW).catch(() => setW(null)); };
-  useEffect(load, [local?.id]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const onFiles = async (list: FileList | null) => {
-    if (!list?.length) return;
-    setBusy(true);
-    try {
-      const files = await Promise.all(Array.from(list).map(async (f) => ({ filename: f.name, content: await f.text() })));
-      const r = await api.post<{ days: number; first_day: string; last_day: string }>("/api/wearable/import-google-health", { files });
-      setMsg({ tone: "info", text: `Imported ${r.days} days (${r.first_day} to ${r.last_day}) for the local participant.` });
-      load();
-      refresh();
-    } catch (e) { setMsg({ tone: "error", text: (e as Error).message }); }
-    finally { setBusy(false); if (ref.current) ref.current.value = ""; }
-  };
-  const days = w?.kind === "device_daily" ? w.series : [];
-  return (
-    <Card title="Your wearable data" icon={<Watch size={15} />}
-      subtitle="Import your own Fitbit / Google Health Takeout files for the local participant: Daily Heart Rate Variability, Daily Resting Heart Rate and Daily Readiness (from the “Physical Activity” folder). Only these three files are read; they stay on this computer.">
-      <div className="flex flex-wrap items-center gap-3">
-        <Button variant="ghost" onClick={() => ref.current?.click()} disabled={busy}><FileUp size={15} /> Choose CSV files…</Button>
-        <input ref={ref} type="file" accept=".csv,text/csv" multiple className="sr-only" aria-label="Choose Google Health CSV files" onChange={(e) => onFiles(e.target.files)} />
-        <span className="text-[13.5px] text-dim">
-          {days.length ? `${days.length} days imported, ${days[0].date} to ${days[days.length - 1].date}.` : "Nothing imported yet."}
-        </span>
-      </div>
-      {msg && <div className="mt-3"><Notice tone={msg.tone}>{msg.text}</Notice></div>}
-    </Card>
-  );
-}
