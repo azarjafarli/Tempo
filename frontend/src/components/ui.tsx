@@ -41,6 +41,7 @@ export function CategoryBadge({ category, small }: { category: Category; small?:
 
 /** Provenance is shown by texture: synthetic data is hatched, real data is solid. */
 export function ProvenanceBadge({ p, long }: { p: Provenance; long?: boolean }) {
+  if (p === "synthetic") return null;
   const s = PROVENANCE_STYLE[p];
   return (
     <span title={s.label} className={cx("inline-flex items-center whitespace-nowrap rounded-[4px] border px-1.5 py-[1px] font-cond text-[12px] font-semibold", s.cls)}>

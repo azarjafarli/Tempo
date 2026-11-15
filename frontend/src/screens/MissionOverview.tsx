@@ -1,7 +1,7 @@
 import { ClipboardCheck, Database, ListChecks, Timer, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CartesianGrid, ComposedChart, Line, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from "recharts";
-import { Button, Card, CategoryBadge, chartTheme, cx, DemoScenarioBanner, Loading, Notice, ProvenanceBadge, SelfReportedTag, Stat } from "../components/ui";
+import { Button, Card, CategoryBadge, chartTheme, cx, Loading, Notice, ProvenanceBadge, SelfReportedTag, Stat } from "../components/ui";
 import { WearableCard } from "../components/WearableScores";
 import { WorkloadPanel } from "../components/WorkloadPanel";
 import { useApp } from "../context";
@@ -21,7 +21,7 @@ export default function MissionOverview() {
 
   if (err) return <Notice tone="error">{err}</Notice>;
   if (!data) return <Loading label="Loading mission" />;
-  if (!data.mission) return <Notice>No mission loaded. Use “Load Demo Mission” in the sidebar.</Notice>;
+  if (!data.mission) return <Notice>No mission loaded. Use “Reset mission” in the sidebar.</Notice>;
   const { mission, crew } = data;
   const synthetic = crew.provenance === "synthetic";
 
@@ -41,13 +41,11 @@ export default function MissionOverview() {
           <Button variant="primary" onClick={() => navigate("lab")}>Run an assessment</Button>
         </div>
 
-        <div className="mt-7">
-          {synthetic ? (
-            <DemoScenarioBanner text={`The crew member, mission and assessment histories are fictional, generated from seed ${mission.random_seed}.`} />
-          ) : (
-            <Notice>This profile holds real measurements recorded on this computer. It is not part of the fictional mission schedule.</Notice>
-          )}
-        </div>
+        {!synthetic && (
+          <div className="mt-7">
+            <Notice>This profile holds your own measurements recorded on this computer. It is not part of the mission schedule.</Notice>
+          </div>
+        )}
 
         <MissionStrip data={data} />
 
@@ -230,7 +228,7 @@ function AssessmentCard({ a, type, onOpen }: { a: OverviewAssessment; type: "pvt
         </p>
       )}
       {a.flagged_metrics.length > 0 && <p className="mt-2 text-xs text-amber">Flagged: {a.flagged_metrics.join(", ")}</p>}
-      {a.warnings.map((w) => <p key={w} className="mt-2 text-xs text-amber">{w}</p>)}
+      {a.warnings.filter((w) => !/synthetic/i.test(w)).map((w) => <p key={w} className="mt-2 text-xs text-amber">{w}</p>)}
       <div className="mt-4"><Button variant="ghost" onClick={onOpen}>Open recovery analysis</Button></div>
     </Card>
   );

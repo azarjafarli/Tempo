@@ -1,6 +1,7 @@
 # DATA_PROVENANCE.md — Real versus simulated inputs
 
-Every record in the database carries exactly one provenance category, and the UI shows a badge for it.
+Every record in the database carries exactly one provenance category. The UI badges real measurements, NASA data,
+references and hypothetical scenarios; synthetic records are covered by the footer statement instead of per-item badges.
 
 | Category (`provenance`) | Label in UI | What it contains | Where it comes from |
 |---|---|---|---|
@@ -39,7 +40,8 @@ Every record in the database carries exactly one provenance category, and the UI
   invalid-measurement handling.
 * All random draws use `numpy.random.default_rng([20260514, profile, crew, session, stream])`. A SHA-256
   fingerprint over all synthetic observations is checked for determinism in the tests.
-* The UI shows an amber **DEMO SCENARIO** indicator whenever synthetic data is displayed.
+* The interface no longer badges synthetic data on each screen; a footer line on every page states that crew,
+  mission and data are simulated, and the `provenance` column is kept on every record.
 
 ## What is self-reported
 

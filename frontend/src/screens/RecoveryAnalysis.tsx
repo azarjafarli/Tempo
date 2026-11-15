@@ -4,7 +4,7 @@ import {
   Bar, BarChart, CartesianGrid, ComposedChart, Legend, Line, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis,
 } from "recharts";
 import { EvaluationSummary } from "../components/EvaluationView";
-import { Card, CategoryBadge, chartTheme, DemoScenarioBanner, Loading, Notice, ProvenanceBadge, Select, SelfReportedTag } from "../components/ui";
+import { Card, CategoryBadge, chartTheme, Loading, Notice, ProvenanceBadge, Select, SelfReportedTag } from "../components/ui";
 import { WearableTrend, type WearableSummary } from "../components/WearableScores";
 import { useApp } from "../context";
 import { api } from "../lib/api";
@@ -47,7 +47,6 @@ export default function RecoveryAnalysis() {
   const base = evalMetric?.baseline;
   const band = base?.median != null && base.scale != null ? [base.median - 3 * base.scale, base.median + 3 * base.scale] : null;
   const d = digitsFor(rule?.unit ?? "");
-  const synthetic = data.evaluated_session?.provenance === "synthetic" || data.crew.provenance === "synthetic";
 
   return (
     <div className="space-y-5">
@@ -64,13 +63,12 @@ export default function RecoveryAnalysis() {
         </div>
       </div>
 
-      {synthetic && <DemoScenarioBanner text="Evaluated data and baseline are synthetic trial-level histories generated from fixed seeds." />}
       <Notice>{data.disclaimer}</Notice>
 
       <Card title={`Evaluated session #${data.evaluated_session?.id ?? "—"}`} icon={<Sigma size={15} />}
         subtitle={data.evaluated_session ? `${data.evaluated_session.phase} session · ${data.evaluated_session.provenance === "synthetic" ? missionTime(data.evaluated_session.mission_time_days) : new Date(data.evaluated_session.started_at).toLocaleString()} · mode ${data.evaluated_session.mode}` : undefined}
         actions={data.evaluated_session && <ProvenanceBadge p={data.evaluated_session.provenance} long />}>
-        <EvaluationSummary evaluation={data.evaluation} warnings={data.warnings} />
+        <EvaluationSummary evaluation={data.evaluation} warnings={data.warnings.filter((w) => !/synthetic/i.test(w))} />
       </Card>
 
       <div className="grid gap-5 xl:grid-cols-2">

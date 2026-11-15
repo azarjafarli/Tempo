@@ -313,7 +313,7 @@ function PvtResult({ result }: { result: { session: Session; analysis: Analysis 
         </div>
       </Card>
       <Card title="Comparison with personal baseline" className="xl:col-span-3">
-        <EvaluationSummary evaluation={result.analysis.evaluation} warnings={result.analysis.warnings} />
+        <EvaluationSummary evaluation={result.analysis.evaluation} warnings={result.analysis.warnings.filter((w) => !/synthetic/i.test(w))} />
       </Card>
     </div>
   );

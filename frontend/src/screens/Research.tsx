@@ -1,4 +1,4 @@
-import { BookOpen, Database, ExternalLink, FileUp, Layers, RefreshCw, ShieldAlert, Tags } from "lucide-react";
+import { BookOpen, Database, ExternalLink, FileUp, Layers, RefreshCw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Button, Card, chartTheme, Loading, Notice, ProvenanceBadge, Stat } from "../components/ui";
@@ -7,16 +7,6 @@ import type { NasaSummary, Provenance, Reference } from "../lib/types";
 
 interface ProvResp { categories: Record<Provenance, { label: string; description: string }>; references: Reference[] }
 interface RecordRow { id: number; source_row: number; eva_number: string; country: string; crew: string; vehicle: string; date_raw: string; duration_raw: string; duration_hours: number; purpose: string }
-
-const LIMITATIONS = [
-  "Not a medical device and not a fitness-for-duty determination. It does not diagnose fatigue, illness or injury.",
-  "The reaction-time task is inspired by the NASA PVT but is not that validated instrument; browser and keyboard latency vary across hardware.",
-  "Flagging thresholds are exploratory statistical rules chosen for this prototype. They have not been validated against any outcome.",
-  "The demo crew, mission and assessment histories are synthetic. The live measurements are of whoever uses this computer, not of astronauts.",
-  "Scheduling restrictions are reviewer-chosen assumptions. The optimizer does not predict recovery or physiological state.",
-  "Historical NASA EVA durations are reference context only. They are never used as labels for recovery, fatigue or injury.",
-  "Sleep score and readiness imitate Fitbit's published structure; Fitbit's formulas are proprietary, so ours are documented approximations. They are wellness indicators from synthetic device data, not medical scores.",
-];
 
 export default function Research() {
   const [summary, setSummary] = useState<NasaSummary | null>(null);
@@ -58,8 +48,8 @@ export default function Research() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="font-cond text-[40px] font-bold leading-[1.05] text-ink">Sources, data and limits</h1>
-        <p className="mt-1.5 max-w-[68ch] text-[15.5px] text-dim">Where every number in this app comes from, what each NASA source supports, and what the prototype cannot tell you.</p>
+        <h1 className="font-cond text-[40px] font-bold leading-[1.05] text-ink">Sources and data</h1>
+        <p className="mt-1.5 max-w-[68ch] text-[15.5px] text-dim">Where the data in this app comes from and what each NASA source supports.</p>
       </div>
 
       <Card title="What NASA already does, and what this adds" icon={<Layers size={15} />}
@@ -103,24 +93,9 @@ export default function Research() {
               <>
                 <div className="grid gap-5 md:grid-cols-4">
                   <Stat label="Valid records" value={imp.rows_valid} sub={`of ${imp.rows_total} rows`} accent="cyan" />
-                  <Stat label="Rejected rows" value={imp.rows_rejected} sub="see reasons below" />
+                  <Stat label="Rejected rows" value={imp.rows_rejected} sub="zero or missing duration" />
                   <Stat label="Median EVA duration" value={`${summary.duration_hours?.median.toFixed(2)} h`} sub={`IQR ${summary.duration_hours?.q1.toFixed(2)}–${summary.duration_hours?.q3.toFixed(2)} h`} />
                   <Stat label="Longest" value={`${summary.duration_hours?.max.toFixed(2)} h`} sub={countries.map(([c, n]) => `${c}: ${n}`).join(" · ")} />
-                </div>
-                <div className="grid gap-4 text-xs text-dim md:grid-cols-2">
-                  <div className="rounded-lg border border-line bg-deck/60 p-3">
-                    <div className="mb-1 text-[11px] text-faint">Source & integrity</div>
-                    <div>File: <span className="font-cond tnum text-ink">{imp.filename}</span></div>
-                    <div>Imported: {new Date(imp.imported_at).toLocaleString()}</div>
-                    <div className="break-all">SHA-256: <span className="font-cond tnum">{imp.sha256}</span></div>
-                    <div className="mt-1">Retrieved via: {imp.retrieved_via}</div>
-                  </div>
-                  <div className="rounded-lg border border-line bg-deck/60 p-3">
-                    <div className="mb-1 text-[11px] text-faint">Detected columns → mapping</div>
-                    <div className="font-cond tnum">{imp.detected_columns.map((c) => `“${c}”`).join(", ")}</div>
-                    <div className="mt-1">{Object.entries(imp.column_mapping).map(([k, v]) => <span key={k} className="mr-2 inline-block font-cond tnum text-ink">{k}←{v}</span>)}</div>
-                    {imp.rejection_examples.length > 0 && <div className="mt-2">Rejected: {imp.rejection_examples.slice(0, 6).map((r) => `line ${r.line} (${r.reason})`).join("; ")}{imp.rejection_examples.length > 6 ? "…" : ""}</div>}
-                  </div>
                 </div>
                 <div className="grid gap-5 lg:grid-cols-2">
                   <div className="h-56" role="img" aria-label="Histogram of historical EVA durations">
@@ -168,9 +143,8 @@ export default function Research() {
         )}
       </Card>
 
-      <div className="grid gap-5 xl:grid-cols-2">
-        <Card title="Sources and what each supports" icon={<BookOpen size={15} />}>
-          <ul className="space-y-3">
+      <Card title="Sources and what each supports" icon={<BookOpen size={15} />}>
+          <ul className="grid gap-3 md:grid-cols-2">
             {prov?.references.filter((r) => r.relation !== "related_work").map((r) => (
               <li key={r.key} className="rounded-lg border border-line bg-deck/60 p-3">
                 <div className="flex items-start justify-between gap-2">
@@ -181,21 +155,7 @@ export default function Research() {
               </li>
             ))}
           </ul>
-        </Card>
-        <div className="space-y-5">
-          <Card title="Data provenance categories" icon={<Tags size={15} />}>
-            <ul className="space-y-2.5">
-              {prov && (Object.entries(prov.categories) as [Provenance, { label: string; description: string }][]).map(([k, v]) => (
-                <li key={k} className="flex gap-3"><div className="w-28 shrink-0"><ProvenanceBadge p={k} /></div><p className="text-xs text-dim">{v.description}</p></li>
-              ))}
-            </ul>
-          </Card>
-          <Card title="Scientific limitations" icon={<ShieldAlert size={15} />}>
-            <ul className="list-disc space-y-1.5 pl-5 text-sm text-dim">{LIMITATIONS.map((l) => <li key={l}>{l}</li>)}</ul>
-            <p className="mt-3 text-xs text-faint">Full details: LIMITATIONS.md, DATA_PROVENANCE.md and RESEARCH.md in the project folder.</p>
-          </Card>
-        </div>
-      </div>
+      </Card>
     </div>
   );
 }

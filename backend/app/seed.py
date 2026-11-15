@@ -29,13 +29,13 @@ CURRENT_DAY = 3
 LOCAL_CODE = "LOCAL"
 
 CREW = [
-    {"code": "VEGA", "display_name": "Crew Member A (call sign VEGA)", "role": "Commander · fictional",
+    {"code": "VEGA", "display_name": "Crew Member A (call sign VEGA)", "role": "Commander",
      "qualifications": ["EVA", "geology", "drilling", "rover"],
      "pvt_median": 262.0, "pvt_sigma": 0.13, "motor_a": 170.0, "motor_b": 105.0},
-    {"code": "ORION", "display_name": "Crew Member B (call sign ORION)", "role": "Flight engineer · fictional",
+    {"code": "ORION", "display_name": "Crew Member B (call sign ORION)", "role": "Flight engineer",
      "qualifications": ["EVA", "rover", "engineering", "comms"],
      "pvt_median": 281.0, "pvt_sigma": 0.12, "motor_a": 185.0, "motor_b": 112.0},
-    {"code": "LYRA", "display_name": "Crew Member C (call sign LYRA)", "role": "Mission specialist · fictional",
+    {"code": "LYRA", "display_name": "Crew Member C (call sign LYRA)", "role": "Mission specialist",
      "qualifications": ["EVA", "geology", "engineering", "drilling"],
      "pvt_median": 249.0, "pvt_sigma": 0.12, "motor_a": 160.0, "motor_b": 100.0},
 ]
@@ -269,7 +269,7 @@ def load_demo(conn: sqlite3.Connection, profile: str = "declining") -> dict[str,
     cur = conn.execute(
         "INSERT INTO missions (name, num_days, current_day, selected_crew_id, scenario_profile, random_seed, provenance, created_at) "
         "VALUES (?,?,?,?,?,?,?,?)",
-        ("LX-5 Lunar Surface Demo Mission (fictional)", NUM_DAYS, CURRENT_DAY, crew_ids["VEGA"], profile, BASE_SEED,
+        ("LX-5 Lunar Surface Mission", NUM_DAYS, CURRENT_DAY, crew_ids["VEGA"], profile, BASE_SEED,
          "synthetic", ts(CURRENT_DAY + 0.3)))
     mission_id = int(cur.lastrowid)
 

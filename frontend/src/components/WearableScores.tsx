@@ -117,7 +117,7 @@ export function WearableCard({ w, who, className }: { w: WearableSummary; who: s
   const n = w.latest;
   return (
     <Card title="Sleep and readiness" icon={<Watch size={16} />} className={className}
-      subtitle={`Recorded by ${n.device ?? "a wrist wearable"} on the morning of ${n.mission_day > 0 ? `mission day ${n.mission_day}` : "the latest pre-mission day"}. Scores out of 100.`}
+      subtitle={`Wrist wearable, morning of ${n.mission_day > 0 ? `mission day ${n.mission_day}` : "the latest pre-mission day"}. Scores out of 100.`}
       actions={w.provenance && <ProvenanceBadge p={w.provenance} long />}>
       <div className="grid gap-6 md:grid-cols-2">
         <div className="flex gap-5">

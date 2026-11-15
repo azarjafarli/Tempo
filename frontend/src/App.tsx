@@ -1,4 +1,4 @@
-import { Activity, BookOpen, CalendarRange, FlaskConical, Gauge, LineChart, Loader2, Rocket, ShieldAlert, Stethoscope } from "lucide-react";
+import { Activity, BookOpen, CalendarRange, Gauge, LineChart, Loader2, Rocket, ShieldAlert, Stethoscope } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { cx, Select } from "./components/ui";
 import { AppCtx, type Screen } from "./context";
@@ -115,15 +115,15 @@ export default function App() {
               );
             })}
           </nav>
-          <div className="m-3 space-y-3 rounded-[8px] border border-amber/40 p-3 hatch">
-            <div className="rounded-[6px] bg-panel/90 p-2.5">
-              <Select label="Demo history" value={profile} onChange={(v) => setProfile(v)}
+          <div className="m-3 rounded-[8px] border border-line">
+            <div className="p-3">
+              <Select label="Crew history" value={profile} onChange={(v) => setProfile(v)}
                 options={[{ value: "declining", label: "Declining performance" }, { value: "stable", label: "Stable performance" }]} />
               <button onClick={loadDemo} disabled={loadingDemo}
-                className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-[6px] bg-amber px-3 py-2 text-[14px] font-semibold text-white transition hover:bg-[#a83a0c] focus:outline-none focus-visible:ring-2 focus-visible:ring-amber focus-visible:ring-offset-2 disabled:opacity-50">
-                {loadingDemo ? <Loader2 size={16} className="animate-spin" /> : <Rocket size={16} />} Load demo mission
+                className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-[6px] bg-ink px-3 py-2 text-[14px] font-semibold text-white transition hover:bg-[#33393f] focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan focus-visible:ring-offset-2 disabled:opacity-50">
+                {loadingDemo ? <Loader2 size={16} className="animate-spin" /> : <Rocket size={16} />} Reset mission
               </button>
-              <p className="mt-2 text-[12px] leading-snug text-dim">Rebuilds the synthetic mission from fixed seeds. Your own measurements are kept.</p>
+              <p className="mt-2 text-[12px] leading-snug text-dim">Restores the mission to its starting state. Your own measurements are kept.</p>
             </div>
           </div>
         </aside>
@@ -136,12 +136,6 @@ export default function App() {
                   <button key={n.id} onClick={() => navigate(n.id)} aria-label={n.label} aria-current={n.id === screen ? "page" : undefined}
                     className={cx("rounded-md p-2", n.id === screen ? "bg-panel text-ink" : "text-dim")}><Icon size={18} /></button>); })}
               </nav>
-              {mission && (
-                <div className="hatch flex items-center gap-2 rounded-full border border-amber/50 px-3 py-1 text-[13px] text-ink" role="status">
-                  <FlaskConical size={14} className="text-amber" aria-hidden />
-                  <span><strong className="font-semibold">Demo scenario</strong> with a synthetic {mission.scenario_profile}-performance history</span>
-                </div>
-              )}
               <div className="ml-auto flex items-center gap-4">
                 {mission && <span className="hidden font-cond text-[16px] text-dim lg:inline">Mission day <strong className="font-semibold text-ink">{mission.current_day}</strong> of {mission.num_days}</span>}
                 {PERSON_SCREENS.includes(screen) && selected && (
@@ -177,8 +171,8 @@ export default function App() {
 
           <footer className="border-t border-line px-5 py-4 text-[12.5px] leading-relaxed text-faint md:px-10">
             <ShieldAlert size={13} className="mr-1.5 inline text-amber" aria-hidden />
-            A research and decision-support prototype for NASA Space Apps 2026. It is not a clinically validated fitness-for-duty
-            system and does not diagnose fatigue, illness or injury. Not affiliated with or endorsed by NASA.
+            A research and decision-support prototype for NASA Space Apps 2026. Crew, mission and their data are simulated. It is not a
+            clinically validated fitness-for-duty system and does not diagnose fatigue, illness or injury. Not affiliated with or endorsed by NASA.
           </footer>
         </div>
       </div>

@@ -9,7 +9,7 @@ export const LAPSE_MS = 500;
 
 export type PvtMode = "demo" | "standard";
 export const PVT_MODES: Record<PvtMode, { durationS: number; isiMin: number; isiMax: number; timeout: number; minValid: number; label: string }> = {
-  demo: { durationS: 60, isiMin: 2000, isiMax: 5000, timeout: 3000, minValid: 8, label: "Demo (1 min)" },
+  demo: { durationS: 60, isiMin: 2000, isiMax: 5000, timeout: 3000, minValid: 8, label: "Quick (1 min)" },
   standard: { durationS: 180, isiMin: 2000, isiMax: 7000, timeout: 3000, minValid: 20, label: "Assessment (3 min)" },
 };
 

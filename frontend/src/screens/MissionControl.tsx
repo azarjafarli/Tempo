@@ -1,7 +1,7 @@
 import { CalendarRange, ClipboardList, LineChart as LineIcon, Moon, NotebookPen } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, ComposedChart, Line, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from "recharts";
-import { Button, Card, CategoryBadge, chartTheme, cx, DemoScenarioBanner, Loading, Notice, ProvenanceBadge, SelfReportedTag } from "../components/ui";
+import { Button, Card, CategoryBadge, chartTheme, cx, Loading, Notice, ProvenanceBadge, SelfReportedTag } from "../components/ui";
 import { WearableCard, WearableCell, type WearableSummary } from "../components/WearableScores";
 import { WorkloadPanel } from "../components/WorkloadPanel";
 import { useApp } from "../context";
@@ -45,7 +45,7 @@ export default function MissionControl() {
 
   if (err) return <Notice tone="error">{err}</Notice>;
   if (!data) return <Loading label="Loading crew data" />;
-  if (!data.mission) return <Notice>No mission loaded. Use “Load demo mission” in the sidebar.</Notice>;
+  if (!data.mission) return <Notice>No mission loaded. Use “Reset mission” in the sidebar.</Notice>;
 
   const entry = data.crew.find((r) => r.crew.code === selected) ?? data.crew[0];
   const flaggedCount = data.crew.filter((r) => r.assessments_flagged > 0).length;
@@ -65,7 +65,6 @@ export default function MissionControl() {
         </p>
       </div>
       <LoopStrip flagged={flaggedCount} reviewed={data.crew.filter((r) => r.latest_note).length} />
-      <DemoScenarioBanner text="Fictional crew with synthetic assessment histories, wearable data and workload ratings." />
       <Notice>{data.notice} Sleep score and readiness are wearable-style wellness indicators (0–100); they never decide a flag or a schedule.</Notice>
 
       <Roster data={data} selected={entry?.crew.code ?? null} onSelect={setSelected} />

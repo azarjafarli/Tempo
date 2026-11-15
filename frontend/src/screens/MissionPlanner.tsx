@@ -1,6 +1,6 @@
 import { AlertOctagon, CheckCircle2, History, Lock, Pencil, Play, Scale, ShieldAlert, Undo2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Button, Card, cx, DemoScenarioBanner, Loading, Notice, NumberField, ProvenanceBadge, Select } from "../components/ui";
+import { Button, Card, cx, Loading, Notice, NumberField, ProvenanceBadge, Select } from "../components/ui";
 import { useApp } from "../context";
 import { api } from "../lib/api";
 import { hhmm } from "../lib/format";
@@ -81,7 +81,6 @@ export default function MissionPlanner() {
         <h1 className="font-cond text-[40px] font-bold leading-[1.05] text-ink">Test a schedule change</h1>
         <p className="mt-1.5 max-w-[68ch] text-[15.5px] text-dim">See how a reviewer’s restriction, such as fewer EVA hours or longer rest, would reshape the five-day lunar EVA plan.</p>
       </div>
-      <DemoScenarioBanner text={`Fictional mission plan. Day ${m.current_day} of ${m.num_days}; tasks before day ${m.current_day} are completed and locked.`} />
       <Notice tone="warn">
         <ShieldAlert size={14} className="mr-1 inline" />
         <strong>The planner never decides that anyone is unfit.</strong> A medical or operational reviewer chooses a hypothetical restriction to investigate.

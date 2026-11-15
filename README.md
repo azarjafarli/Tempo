@@ -66,9 +66,10 @@ Interactive API docs are at <http://127.0.0.1:8000/docs> while the server runs.
 
 ## 2. Demo script for judges (about 6 minutes, no code edits)
 
-1. **Open the seeded mission.** The app starts with the *declining-performance* demo. The amber
-   **DEMO SCENARIO** pill in the header is visible whenever synthetic data is on screen.
-   To reload, pick a history in the sidebar (*Declining* or *Stable*) and click **Load Demo Mission**.
+1. **Open the seeded mission.** The app starts with the *declining-performance* crew history. To restore it,
+   pick a history in the sidebar (*Declining* or *Stable*) and click **Reset mission**. The interface does not
+   badge synthetic data; the footer states that crew, mission and data are simulated, and every record still
+   carries its provenance in the database (see DATA_PROVENANCE.md).
 2. **Mission Overview** — fictional crew member VEGA, mission day 3/5, last EVA (7 h 00 min, day 2), next EVA,
    the five-day EVA timeline, latest assessments vs baseline, data-quality table, latest self-reported workload rating
    and next steps. A **Sleep and readiness** card shows last night's sleep score and this morning's readiness
@@ -82,7 +83,7 @@ Interactive API docs are at <http://127.0.0.1:8000/docs> while the server runs.
    *Functional change worth reviewing*. Expand **Why was this flagged?** to see the exact observations
    (value, baseline median, MAD, difference, robust z, rule thresholds). Note the interrupted session in the session log (Day 2 · 19:12): a
    simulated **interrupted** run that is stored but never interpreted.
-5. **Complete a real assessment** — *Performance Lab → A · Vigilant attention*, mode *Demo (1 min)*,
+5. **Complete a real assessment** — *Performance Lab → A · Vigilant attention*, mode *Quick (1 min)*,
    click **Start**, press **Space** whenever the amber target appears. Try switching tabs once to see the run
    invalidated. Your result is saved as a *real local measurement* and immediately compared with the baseline.
    (Comparing your real result with VEGA's synthetic baseline is labelled as a workflow demonstration only;

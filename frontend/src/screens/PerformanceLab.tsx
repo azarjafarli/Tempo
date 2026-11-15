@@ -12,13 +12,12 @@ import type { Session } from "../lib/types";
 type Tab = "pvt" | "motor" | "checkin";
 
 export default function PerformanceLab() {
-  const { crew, selectedCrewId, setSelectedCrewId, navigate, params } = useApp();
+  const { crew, selectedCrewId, navigate, params } = useApp();
   const [tab, setTab] = useState<Tab>((params.tab as Tab) || "pvt");
   const [phase, setPhase] = useState<"baseline" | "mission">("mission");
   const [sessions, setSessions] = useState<Session[]>([]);
   const [bump, setBump] = useState(0);
   const me = crew.find((c) => c.id === selectedCrewId)!;
-  const local = crew.find((c) => c.code === "LOCAL");
 
   useEffect(() => {
     api.get<Session[]>(`/api/assessments?crew_id=${selectedCrewId}`).then(setSessions).catch(() => undefined);
@@ -45,14 +44,8 @@ export default function PerformanceLab() {
         </div>
       </div>
 
-      {me.is_fictional ? (
-        <Notice tone="warn">
-          You are recording a <strong>real measurement under the fictional demo persona {me.code}</strong>. It is stored as a real local measurement, never altered,
-          and compared with {me.code}’s <strong>synthetic</strong> baseline only to demonstrate the workflow — that comparison says nothing about you.
-          {local && <> For a genuine personal baseline, <button className="underline decoration-dotted hover:text-ink" onClick={() => setSelectedCrewId(local.id)}>switch to “Local participant (you)”</button>.</>}
-        </Notice>
-      ) : (
-        <Notice>Recording real measurements for the local participant. Record at least 3 baseline sessions (5 for an “established” baseline) before mission-session comparisons are interpreted.</Notice>
+      {!me.is_fictional && (
+        <Notice>Recording your own measurements. Record at least 3 baseline sessions (5 for an “established” baseline) before mission-session comparisons are interpreted.</Notice>
       )}
 
       <div role="tablist" aria-label="Assessments" className="flex flex-wrap gap-2">
