@@ -20,6 +20,9 @@ const NAV: { id: Screen; label: string; icon: typeof Gauge }[] = [
   { id: "research", label: "Research and data", icon: BookOpen },
 ];
 
+/** Screens that show one person's data; only these use the header crew picker. */
+const PERSON_SCREENS: Screen[] = ["overview", "lab", "analysis"];
+
 function parseHash(): { screen: Screen; params: Record<string, string> } {
   const [path, query] = window.location.hash.replace(/^#\/?/, "").split("?");
   const screen = (NAV.find((n) => n.id === path)?.id ?? "overview") as Screen;
@@ -141,9 +144,17 @@ export default function App() {
               )}
               <div className="ml-auto flex items-center gap-4">
                 {mission && <span className="hidden font-cond text-[16px] text-dim lg:inline">Mission day <strong className="font-semibold text-ink">{mission.current_day}</strong> of {mission.num_days}</span>}
-                <Select label="Crew member" className="[&>span]:sr-only" value={selectedCrewId ?? 0}
-                  onChange={(v) => setSelectedCrewId(Number(v))}
-                  options={crew.map((c) => ({ value: c.id, label: c.display_name }))} />
+                {PERSON_SCREENS.includes(screen) && selected && (
+                  <label className="flex items-center gap-2.5 rounded-[8px] border border-line bg-panel py-1 pl-3 pr-1 text-[13px] text-dim">
+                    {screen === "lab" ? "Performing as" : "Viewing"}
+                    <span className="font-cond text-[18px] font-bold leading-none text-ink">{selected.code === "LOCAL" ? "You" : selected.code}</span>
+                    <select value={selectedCrewId ?? 0} onChange={(e) => setSelectedCrewId(Number(e.target.value))}
+                      aria-label={screen === "lab" ? "Crew member performing the assessment" : "Crew member to view"}
+                      className="rounded-[6px] border border-line bg-deck px-2 py-1 text-[13px] text-ink focus:border-cyan focus:outline-none focus:ring-1 focus:ring-cyan">
+                      {crew.map((c) => <option key={c.id} value={c.id}>{c.display_name}</option>)}
+                    </select>
+                  </label>
+                )}
               </div>
             </div>
           </header>

@@ -1,4 +1,4 @@
-import { BookOpen, Database, ExternalLink, FileUp, RefreshCw, ShieldAlert, Tags } from "lucide-react";
+import { BookOpen, Database, ExternalLink, FileUp, Layers, RefreshCw, ShieldAlert, Tags } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Button, Card, chartTheme, Loading, Notice, ProvenanceBadge, Stat } from "../components/ui";
@@ -61,6 +61,32 @@ export default function Research() {
         <h1 className="font-cond text-[40px] font-bold leading-[1.05] text-ink">Sources, data and limits</h1>
         <p className="mt-1.5 max-w-[68ch] text-[15.5px] text-dim">Where every number in this app comes from, what each NASA source supports, and what the prototype cannot tell you.</p>
       </div>
+
+      <Card title="What NASA already does, and what this adds" icon={<Layers size={15} />}
+        subtitle="NASA already tests astronauts against their own baseline. This project builds on that idea and connects it to EVA planning.">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div>
+            <h3 className="font-cond text-[17px] font-semibold text-ink">Existing NASA tools</h3>
+            <ul className="mt-2 divide-y divide-line">
+              {prov?.references.filter((r) => r.relation === "related_work").map((r) => (
+                <li key={r.key} className="py-2.5 first:pt-0">
+                  <a href={r.url} target="_blank" rel="noreferrer" className="text-[14.5px] font-medium text-cyan hover:underline">{r.title} <ExternalLink size={12} className="inline" /></a>
+                  <p className="mt-0.5 text-[13px] text-dim">{r.supports.replace(/^Related NASA work\. /, "")}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h3 className="font-cond text-[17px] font-semibold text-ink">What EVA Recovery adds</h3>
+            <ol className="mt-2 space-y-3 text-[14px] text-dim">
+              <li><strong className="text-ink">Closes the loop to the EVA schedule.</strong> A flagged change goes through a recorded reviewer decision into a constraint-based re-plan of the next spacewalks, or an explanation of why no plan works.</li>
+              <li><strong className="text-ink">Built for high-tempo planetary EVAs.</strong> Several demanding surface EVAs in a few days, a precision motor task for suited hand work, and rest tracked between EVAs.</li>
+              <li><strong className="text-ink">One reviewer workflow.</strong> Test, flag with visible evidence, doctor’s note, schedule what-if.</li>
+            </ol>
+            <p className="mt-3 text-[12.5px] text-faint">Based on public sources only; NASA may have internal Artemis tools we cannot see. Our tasks are not validated like NASA’s instruments.</p>
+          </div>
+        </div>
+      </Card>
 
       <Card title="NASA historical EVA dataset · import workflow" icon={<Database size={15} />} actions={<ProvenanceBadge p="nasa_public_data" long />}
         subtitle="Extra-vehicular Activity (EVA) – US and Russia. The importer reads the file’s header, maps recognized columns, and rejects rows it cannot parse. Nothing is filled in or invented.">
@@ -145,7 +171,7 @@ export default function Research() {
       <div className="grid gap-5 xl:grid-cols-2">
         <Card title="Sources and what each supports" icon={<BookOpen size={15} />}>
           <ul className="space-y-3">
-            {prov?.references.map((r) => (
+            {prov?.references.filter((r) => r.relation !== "related_work").map((r) => (
               <li key={r.key} className="rounded-lg border border-line bg-deck/60 p-3">
                 <div className="flex items-start justify-between gap-2">
                   <a href={r.url} target="_blank" rel="noreferrer" className="text-sm font-medium text-cyan hover:underline">{r.title} <ExternalLink size={12} className="inline" /></a>

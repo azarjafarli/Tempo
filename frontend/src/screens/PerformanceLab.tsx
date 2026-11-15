@@ -40,8 +40,6 @@ export default function PerformanceLab() {
           <p className="mt-1.5 max-w-[68ch] text-[15.5px] text-dim">Three short tasks: a reaction-time test, a precision clicking test and a check-in. Each result is saved and compared with your baseline.</p>
         </div>
         <div className="flex flex-wrap items-end gap-3">
-          <Select label="Performing as" value={selectedCrewId ?? 0} onChange={(v) => setSelectedCrewId(Number(v))}
-            options={crew.map((c) => ({ value: c.id, label: c.display_name }))} />
           <Select label="Session type" value={phase} onChange={setPhase}
             options={[{ value: "mission", label: "Mission session (compare)" }, { value: "baseline", label: "Baseline session (build baseline)" }]} />
         </div>

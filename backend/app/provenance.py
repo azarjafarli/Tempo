@@ -55,6 +55,34 @@ def require_valid(key: str) -> str:
 # is used for in this prototype; see RESEARCH.md for the full discussion.
 REFERENCES: list[dict[str, str]] = [
     {
+        "key": "winscat",
+        "title": "WinSCAT: Spaceflight Cognitive Assessment Tool for Windows (NTRS 20100036584)",
+        "url": "https://ntrs.nasa.gov/citations/20100036584",
+        "provenance": "published_reference",
+        "supports": "Related NASA work. Five-test cognitive battery that is a medical requirement for U.S. long-duration "
+        "astronauts, compared with each astronaut's own ground baseline. Shows the personal-baseline approach is "
+        "established practice; our app does not replace it.",
+        "relation": "related_work",
+    },
+    {
+        "key": "reaction_self_test",
+        "title": "Psychomotor Vigilance Self Test on ISS / Reaction Self Test (NTRS 20090029851)",
+        "url": "https://ntrs.nasa.gov/citations/20090029851",
+        "provenance": "published_reference",
+        "supports": "Related NASA work. A brief PVT-B reaction-time test used by ISS astronauts since 2009 to identify "
+        "fatigue effects on their own performance. Our vigilance task follows the same idea but is not this instrument.",
+        "relation": "related_work",
+    },
+    {
+        "key": "cognition_battery",
+        "title": "Cognition test battery (University of Pennsylvania, developed for NASA)",
+        "url": "https://www.med.upenn.edu/uep/cognition.html",
+        "provenance": "published_reference",
+        "supports": "Related NASA work. Ten brief validated cognitive tests, part of NASA's Behavioral Health and "
+        "Performance Standard Measures on ISS. Far broader and better validated than our two tasks.",
+        "relation": "related_work",
+    },
+    {
         "key": "nasa_eva_dataset",
         "title": "Extra-vehicular Activity (EVA) - US and Russia (NASA open data)",
         "url": "https://data.nasa.gov/dataset/extra-vehicular-activity-eva-us-and-russia",

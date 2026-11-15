@@ -64,7 +64,8 @@ export default function MissionControl() {
             `${flaggedCount} of ${data.crew.length} crew members ${flaggedCount === 1 ? "has" : "have"} a change worth reviewing; they are listed first.`}
         </p>
       </div>
-      <DemoScenarioBanner text="Fictional crew with synthetic assessment histories and self-reports." />
+      <LoopStrip flagged={flaggedCount} reviewed={data.crew.filter((r) => r.latest_note).length} />
+      <DemoScenarioBanner text="Fictional crew with synthetic assessment histories, wearable data and workload ratings." />
       <Notice>{data.notice} Sleep score and readiness are wearable-style wellness indicators (0–100); they never decide a flag or a schedule.</Notice>
 
       <Roster data={data} selected={entry?.crew.code ?? null} onSelect={setSelected} />
@@ -75,6 +76,29 @@ export default function MissionControl() {
           onPlanner={() => navigate("planner", { crew: entry.crew.code })} />
       )}
     </div>
+  );
+}
+
+/** The workflow this app closes: from a test result to a revised EVA plan. */
+function LoopStrip({ flagged, reviewed }: { flagged: number; reviewed: number }) {
+  const steps = [
+    { t: "Test", d: "Reaction time and precision motor, about 2 minutes" },
+    { t: "Flag", d: `${flagged} crew member${flagged === 1 ? "" : "s"} outside their own baseline` },
+    { t: "Review", d: `${reviewed} reviewer note${reviewed === 1 ? "" : "s"} recorded` },
+    { t: "Re-plan", d: "Model a restriction and re-plan the next spacewalks" },
+  ];
+  return (
+    <ol className="grid gap-px overflow-hidden rounded-[10px] border border-line bg-line sm:grid-cols-4" aria-label="Workflow from test to schedule">
+      {steps.map((s, i) => (
+        <li key={s.t} className="flex gap-3 bg-panel px-4 py-3">
+          <span className="font-cond text-[26px] font-bold leading-none text-faint">{i + 1}</span>
+          <div>
+            <div className="font-cond text-[17px] font-semibold leading-tight text-ink">{s.t}</div>
+            <div className="text-[12.5px] leading-snug text-dim">{s.d}</div>
+          </div>
+        </li>
+      ))}
+    </ol>
   );
 }
 

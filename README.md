@@ -6,6 +6,14 @@ An astronaut completes short computerized assessments between planetary EVAs, co
 their **own personal baseline**, and a reviewer explores how hypothetical workload adjustments would
 change a five-day lunar EVA schedule.
 
+### Why this project
+
+NASA already tracks astronauts' reaction time and cognition against their own baseline on the ISS (WinSCAT,
+the Reaction Self Test, the Cognition battery). Lunar missions will add several demanding spacewalks within a
+few days, and in the public tools we found, those results do not yet feed into EVA planning. EVA Recovery
+closes that loop: **test → flag with evidence → doctor's review → instant re-plan of the next spacewalks.**
+See [RESEARCH.md](RESEARCH.md#related-nasa-work-what-already-exists-and-what-this-project-adds).
+
 > **This is not a clinically validated fitness-for-duty system.** It does not diagnose fatigue, illness or
 > injury. Flags are exploratory statistical prompts for human review. The scheduler never decides that
 > anyone is unfit; a human reviewer chooses every restriction it explores. See [LIMITATIONS.md](LIMITATIONS.md).

@@ -296,6 +296,7 @@ export interface NasaSummary {
 }
 
 export interface Reference {
+  relation?: "related_work";
   key: string;
   title: string;
   url: string;
