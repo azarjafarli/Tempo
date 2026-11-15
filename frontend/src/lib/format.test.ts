@@ -18,7 +18,7 @@ describe("formatting", () => {
   });
   it("labels every provenance category, distinguishing real from synthetic", () => {
     expect(Object.keys(PROVENANCE_STYLE).sort()).toEqual(
-      ["hypothetical_scenario", "local_measurement", "nasa_public_data", "published_reference", "synthetic"]);
+      ["device_data", "hypothetical_scenario", "local_measurement", "nasa_public_data", "published_reference", "synthetic"]);
     expect(PROVENANCE_STYLE.synthetic.label).toMatch(/Synthetic/);
     expect(PROVENANCE_STYLE.local_measurement.label).toMatch(/Real/);
   });

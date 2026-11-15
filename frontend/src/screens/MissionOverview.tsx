@@ -47,8 +47,9 @@ export default function MissionOverview() {
           </div>
         )}
 
-        <MissionStrip data={data} />
+        {synthetic && <MissionStrip data={data} />}
 
+        {synthetic && (
         <dl className="mt-6 grid grid-cols-2 gap-y-5 border-t border-line pt-5 lg:grid-cols-4 lg:divide-x lg:divide-line">
           <div className="pr-6"><Stat label="Last EVA" value={data.last_eva ? hoursToHM(data.last_eva.duration_hours) : "None yet"}
             sub={data.last_eva ? `EVA ${data.last_eva.eva_number} on day ${data.last_eva.mission_day}, with ${data.last_eva.crew.filter((c) => c !== crew.code).join(" and ")}` : "No completed EVA"} /></div>
@@ -57,6 +58,7 @@ export default function MissionOverview() {
           <div className="lg:px-6"><Stat label="EVAs for this crew member" value={`${data.eva_count.completed} of ${data.eva_count.completed + data.eva_count.planned}`} sub="completed so far" /></div>
           <div className="lg:pl-6"><Stat label="Mission" value={`Day ${mission.current_day} of ${mission.num_days}`} sub={mission.name} /></div>
         </dl>
+        )}
       </section>
 
       <WearableCard w={data.wearable} who={crew.code === "LOCAL" ? "your" : crew.code} />

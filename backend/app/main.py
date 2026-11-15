@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 
-from . import nasa_import, scheduler, services, store
+from . import google_health, nasa_import, scheduler, services, store
 from .analysis.baseline import rules_documentation
 from .analysis.motor import layout
 from .analysis.pvt import MODE_CONFIG
@@ -59,6 +59,11 @@ def bootstrap(conn: sqlite3.Connection) -> None:
         seed_wearable(conn, m["scenario_profile"])  # databases created before wearable data existed
     if not nasa_import.import_status(conn)["imported"] and nasa_import.BUNDLED_FILE.exists():
         nasa_import.import_bundled(conn)
+    # The local participant's own Fitbit / Google Health files, if placed in data/private/google_health
+    local_id = ensure_local_participant(conn)
+    if google_health.PRIVATE_DIR.exists() and not conn.execute(
+            "SELECT 1 FROM device_daily WHERE crew_member_id=? LIMIT 1", (local_id,)).fetchone():
+        google_health.import_folder(conn, local_id, google_health.PRIVATE_DIR)
     conn.commit()
 
 
@@ -159,6 +164,15 @@ class ReviewerNoteIn(BaseModel):
     author: str = Field(min_length=1, max_length=80)
     status: Literal["reviewed_no_action", "follow_up", "restriction_to_model"]
     note: str = Field(min_length=1, max_length=1000)
+
+
+class FileIn(BaseModel):
+    filename: str = Field(max_length=200)
+    content: str = Field(max_length=6_000_000)
+
+
+class DeviceImportIn(BaseModel):
+    files: list[FileIn] = Field(min_length=1, max_length=20)
 
 
 class CsvImportIn(BaseModel):
@@ -330,6 +344,17 @@ def analysis(crew_id: int, type: Literal["pvt", "motor"] = "pvt", session_id: Op
 def wearable(crew_id: int, conn: sqlite3.Connection = Depends(get_conn)) -> dict[str, Any]:
     _require_crew(conn, crew_id)
     return services.wearable_summary(conn, crew_id)
+
+
+@app.post("/api/wearable/import-google-health")
+def import_google_health(body: DeviceImportIn, conn: sqlite3.Connection = Depends(get_conn)) -> dict[str, Any]:
+    """Import Fitbit / Google Health daily CSVs for the local participant only."""
+    local_id = ensure_local_participant(conn)
+    res = google_health.import_texts(conn, local_id, {f.filename: f.content for f in body.files})
+    if res["days"] == 0:
+        raise HTTPException(422, "None of the files is a Daily Heart Rate Variability, Daily Resting Heart Rate or "
+                                 "Daily Readiness CSV from a Google Health export.")
+    return res
 
 
 # ---- mission control (reviewer roster)

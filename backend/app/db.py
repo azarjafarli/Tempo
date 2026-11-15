@@ -200,6 +200,24 @@ CREATE TABLE IF NOT EXISTS wearable_nights (
     UNIQUE (crew_member_id, mission_day)
 );
 
+CREATE TABLE IF NOT EXISTS device_daily (
+    id                  INTEGER PRIMARY KEY,
+    crew_member_id      INTEGER NOT NULL REFERENCES crew_members(id) ON DELETE CASCADE,
+    date                TEXT NOT NULL,      -- YYYY-MM-DD (UTC, as exported)
+    hrv_ms              REAL,               -- average overnight RMSSD
+    deep_sleep_rmssd_ms REAL,
+    nonrem_hr           REAL,               -- sleeping (non-REM) heart rate
+    resting_hr          REAL,
+    readiness_score     INTEGER,            -- the device vendor's own score (1-100)
+    readiness_type      TEXT,               -- LOW | MEDIUM | HIGH
+    sleep_readiness     TEXT,
+    hrv_readiness       TEXT,
+    rhr_readiness       TEXT,
+    source              TEXT NOT NULL,
+    provenance          TEXT NOT NULL,
+    UNIQUE (crew_member_id, date)
+);
+
 CREATE TABLE IF NOT EXISTS reviewer_notes (
     id                  INTEGER PRIMARY KEY,
     crew_member_id      INTEGER NOT NULL REFERENCES crew_members(id) ON DELETE CASCADE,

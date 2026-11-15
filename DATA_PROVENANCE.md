@@ -1,7 +1,7 @@
 # DATA_PROVENANCE.md — Real versus simulated inputs
 
 Every record in the database carries exactly one provenance category. The UI badges real measurements, NASA data,
-references and hypothetical scenarios; synthetic records are covered by the footer statement instead of per-item badges.
+references and hypothetical scenarios; synthetic records are not labelled on screen.
 
 | Category (`provenance`) | Label in UI | What it contains | Where it comes from |
 |---|---|---|---|
@@ -33,6 +33,7 @@ references and hypothetical scenarios; synthetic records are covered by the foot
 ## Synthetic demo data
 
 * Fictional crew with call signs; no real astronaut names or records.
+* Each fictional crew member has 5 baseline and 4 mission sessions per assessment (enough for mission trends).
 * Two reproducible histories for VEGA: **declining-performance** and **stable-performance** (sidebar →
   Load Demo Mission). ORION and LYRA are always stable.
 * Each session stores raw synthetic trials (reaction times, clicks, pointer paths) so the same scoring
@@ -40,8 +41,8 @@ references and hypothetical scenarios; synthetic records are covered by the foot
   invalid-measurement handling.
 * All random draws use `numpy.random.default_rng([20260514, profile, crew, session, stream])`. A SHA-256
   fingerprint over all synthetic observations is checked for determinism in the tests.
-* The interface no longer badges synthetic data on each screen; a footer line on every page states that crew,
-  mission and data are simulated, and the `provenance` column is kept on every record.
+* The interface does not label synthetic data on screen; the `provenance` column is kept on every record, and
+  this document is the reference for what is simulated.
 
 ## What is self-reported
 
@@ -58,6 +59,18 @@ never self-reported; they come from (currently synthetic) wearable data.
 * The sleep score (0–100) and readiness (0–100) are computed from these nights by `app/analysis/wearable.py`.
   The structure follows Fitbit's public description; the formulas are this project's approximations.
 * A real Fitbit/Google Health export importer is planned; imported nights would carry a separate, real-device label.
+
+## Your own wearable data (local participant only)
+
+* Category `device_data`. Imported from the user's own Fitbit / Google Health Takeout export: Daily Heart Rate
+  Variability (overnight RMSSD, non-REM heart rate), Daily Resting Heart Rate and Daily Readiness (the vendor's own
+  score and its sleep / HRV / resting-heart-rate ratings). Files are recognised by header; nothing else is read.
+* The export has no sleep duration or stages. The local participant's sleep score is therefore *estimated*
+  (derived, not measured): Fitbit's sleep-readiness rating (Very low 48 … Very high 90) shifted by 0.15 × (readiness − 60),
+  or 45 + 0.45 × readiness when no sleep rating exists. It is labelled "estimated" in the app. The readiness shown is
+  Fitbit's own value, not this project's approximation.
+* The files live in `backend/data/private/google_health/`, which is git-ignored, and are imported on startup or via
+  *Research and data → Your wearable data* or `python -m app.cli import-google-health <folder>`.
 
 ## Real local measurements
 

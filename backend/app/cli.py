@@ -3,6 +3,7 @@
     python -m app.cli reset [--profile declining|stable]   # drop and recreate the database, seed demo + NASA CSV
     python -m app.cli seed  [--profile declining|stable]   # reload the synthetic demo mission (keeps local participant data)
     python -m app.cli import-nasa [path/to/file.csv]       # import the NASA EVA CSV (bundled copy if no path)
+    python -m app.cli import-google-health <folder>         # your own Fitbit/Google Health daily CSVs (local participant)
 """
 from __future__ import annotations
 
@@ -20,6 +21,8 @@ def main() -> None:
     for name in ("reset", "seed"):
         p = sub.add_parser(name)
         p.add_argument("--profile", choices=["declining", "stable"], default="declining")
+    p = sub.add_parser("import-google-health", help="import your own Fitbit / Google Health daily CSVs for the local participant")
+    p.add_argument("folder")
     p = sub.add_parser("import-nasa")
     p.add_argument("path", nargs="?")
     args = ap.parse_args()
@@ -44,6 +47,13 @@ def main() -> None:
             res = load_demo(conn, args.profile)
             conn.commit()
             print(f"Demo mission reloaded: profile={res['profile']} sessions={res['sessions_created']}")
+        elif args.cmd == "import-google-health":
+            from . import google_health
+            init_schema(conn)
+            lid = ensure_local_participant(conn)
+            res = google_health.import_folder(conn, lid, Path(args.folder))
+            conn.commit()
+            print(f"Imported {res['days']} days ({res['first_day']} to {res['last_day']}) from {[u['file'] for u in res['files_used']]}")
         elif args.cmd == "import-nasa":
             init_schema(conn)
             if args.path:

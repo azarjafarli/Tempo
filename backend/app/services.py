@@ -296,7 +296,73 @@ def mission_control(conn: sqlite3.Connection) -> dict[str, Any]:
     }
 
 
+READINESS_TYPE_BAND = {"LOW": "Low", "MEDIUM": "Moderate", "HIGH": "High"}
+SLEEP_LEVEL_CENTRE = {"Very Low": 48, "Low": 60, "Medium": 72, "High": 82, "Very High": 90}
+
+
+def estimate_sleep_score(sleep_level: str | None, readiness: int | None) -> int | None:
+    """Estimated 0-100 sleep score for exports without sleep duration or stages.
+
+    Starts from the vendor's sleep-readiness rating (Very low 48 ... Very high 90) and shifts it by how far the
+    overall readiness score is from 60 (0.15 points per point). Without a sleep rating it falls back to
+    45 + 0.45 x readiness. An approximation for display only, labelled "estimated".
+    """
+    if sleep_level in SLEEP_LEVEL_CENTRE:
+        v = SLEEP_LEVEL_CENTRE[sleep_level] + (0.15 * (readiness - 60) if readiness is not None else 0)
+    elif readiness is not None:
+        v = 45 + 0.45 * readiness
+    else:
+        return None
+    return int(round(max(0, min(100, v))))
+
+
+def _device_summary(days: list[dict[str, Any]]) -> dict[str, Any]:
+    """Summary from a real Fitbit / Google Health export: the vendor's readiness plus HRV and heart rate.
+
+    The export contains no sleep duration or stages, so no sleep score is computed.
+    """
+    scored = [d for d in days if d["readiness_score"] is not None] or days
+    last = scored[-1]
+    comps = []
+    for key, label, level, detail in (
+        ("hrv", "Heart-rate variability", last["hrv_readiness"], f"{last['hrv_ms']:.0f} ms overnight" if last["hrv_ms"] else None),
+        ("rhr", "Resting heart rate", last["rhr_readiness"], f"{last['resting_hr']:.0f} bpm" if last["resting_hr"] else None),
+        ("sleep", "Sleep", last["sleep_readiness"], None),
+    ):
+        comps.append({"key": key, "label": label, "level": level or "Not rated", "detail": detail or ""})
+    from .analysis.wearable import SLEEP_BANDS, band
+    est = estimate_sleep_score(last["sleep_readiness"], last["readiness_score"])
+    latest = {
+        "date": last["date"], "mission_day": None, "provenance": "device_data", "device": last["source"],
+        "hrv_ms": last["hrv_ms"], "resting_hr": last["resting_hr"], "sleeping_hr": last["nonrem_hr"],
+        "sleep": None if est is None else {
+            "score": est, "band": band(est, SLEEP_BANDS), "components": [], "estimated": True,
+            "basis": f"Estimated from Fitbit's sleep rating ({last['sleep_readiness'] or 'not rated'}) "
+                     f"and readiness score ({last['readiness_score'] if last['readiness_score'] is not None else 'n/a'}).",
+        },
+        "readiness": {"score": last["readiness_score"], "band": READINESS_TYPE_BAND.get(last["readiness_type"] or "", "Not rated"),
+                      "components": comps, "vendor_score": True},
+    }
+    return {
+        "available": True, "kind": "device_daily", "latest": latest, "provenance": "device_data",
+        "series": [{"date": d["date"], "mission_day": None,
+                    "sleep_score": estimate_sleep_score(d["sleep_readiness"], d["readiness_score"]), "readiness": d["readiness_score"],
+                    "hrv_ms": d["hrv_ms"], "resting_hr": d["resting_hr"], "asleep_h": None} for d in days],
+        "method": {
+            "source_note": "Imported from your Fitbit / Google Health export. Readiness and its ratings are the "
+                           "vendor's own values; HRV is the overnight average (RMSSD).",
+            "sleep_bands": "", "readiness_bands": "",
+            "limits": "Your export has no sleep duration or sleep stages, so the sleep score is estimated from Fitbit's "
+                      "sleep rating and readiness score. Wellness data only; not used by the flagging rules or the scheduler.",
+        },
+    }
+
+
 def wearable_summary(conn: sqlite3.Connection, crew_id: int) -> dict[str, Any]:
+    from .google_health import daily_rows
+    days = daily_rows(conn, crew_id)
+    if days and not conn.execute("SELECT 1 FROM wearable_nights WHERE crew_member_id=? LIMIT 1", (crew_id,)).fetchone():
+        return _device_summary(days)
     rows = [dict(r) for r in conn.execute(
         "SELECT * FROM wearable_nights WHERE crew_member_id=? ORDER BY mission_day", (crew_id,)).fetchall()]
     nights = wear.score_nights(rows) if rows else []

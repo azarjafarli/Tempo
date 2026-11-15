@@ -1,6 +1,7 @@
 export type Provenance =
   | "nasa_public_data"
   | "local_measurement"
+  | "device_data"
   | "synthetic"
   | "published_reference"
   | "hypothetical_scenario";

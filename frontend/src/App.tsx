@@ -1,4 +1,4 @@
-import { Activity, BookOpen, CalendarRange, Gauge, LineChart, Loader2, Rocket, ShieldAlert, Stethoscope } from "lucide-react";
+import { Activity, BookOpen, CalendarRange, Gauge, LineChart, Loader2, Rocket, Stethoscope } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { cx, Select } from "./components/ui";
 import { AppCtx, type Screen } from "./context";
@@ -169,11 +169,6 @@ export default function App() {
             )}
           </main>
 
-          <footer className="border-t border-line px-5 py-4 text-[12.5px] leading-relaxed text-faint md:px-10">
-            <ShieldAlert size={13} className="mr-1.5 inline text-amber" aria-hidden />
-            A research and decision-support prototype for NASA Space Apps 2026. Crew, mission and their data are simulated. It is not a
-            clinically validated fitness-for-duty system and does not diagnose fatigue, illness or injury. Not affiliated with or endorsed by NASA.
-          </footer>
         </div>
       </div>
     </AppCtx.Provider>

@@ -42,7 +42,19 @@ CREW = [
 
 # mission timeline positions (days) of assessment sessions
 BASELINE_TIMES = [-10.4, -9.4, -8.4, -7.4, -6.4]
-MISSION_TIMES = {"VEGA": [1.75, 2.25, 2.75, 3.25], "ORION": [1.75, 2.25, 3.25], "LYRA": [2.75, 3.25]}
+MISSION_TIMES = {"VEGA": [1.75, 2.25, 2.75, 3.25], "ORION": [1.75, 2.25, 2.75, 3.25], "LYRA": [1.25, 2.25, 2.75, 3.25]}
+# Seed index of each session. Sessions added later get indices from 20 upward so earlier sessions keep identical data.
+ORIGINAL_MISSION_TIMES = {"VEGA": [1.75, 2.25, 2.75, 3.25], "ORION": [1.75, 2.25, 3.25], "LYRA": [2.75, 3.25]}
+
+
+def _seed_index(code: str, phase: str, position: int, tp: float) -> int:
+    if phase == "baseline":
+        return position
+    orig = ORIGINAL_MISSION_TIMES[code]
+    if tp in orig:
+        return len(BASELINE_TIMES) + orig.index(tp)
+    extra = [t for t in MISSION_TIMES[code] if t not in orig]
+    return 20 + extra.index(tp)
 
 # per-session modifiers for VEGA's mission sessions (index aligned with MISSION_TIMES["VEGA"])
 VEGA_PROFILE = {
@@ -296,7 +308,8 @@ def load_demo(conn: sqlite3.Connection, profile: str = "declining") -> dict[str,
         times = [(tp, "baseline", None) for tp in BASELINE_TIMES]
         for k, tp in enumerate(MISSION_TIMES[c["code"]]):
             times.append((tp, "mission", k))
-        for si, (tp, phase, k) in enumerate(times):
+        for pos, (tp, phase, k) in enumerate(times):
+            si = _seed_index(c["code"], phase, pos, tp)
             if c["code"] == "VEGA" and k is not None:
                 prof = VEGA_PROFILE[profile]
                 mod = {key: prof[key][k] for key in prof}

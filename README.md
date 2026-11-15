@@ -57,7 +57,9 @@ npm run dev                       # or: dev server on http://localhost:5173
 ```
 
 Other CLI commands: `python -m app.cli seed --profile stable` (reload only the synthetic mission, keeping
-local-participant data) and `python -m app.cli import-nasa [path\to\file.csv]`.
+local-participant data), `python -m app.cli import-nasa [path\to\file.csv]` and
+`python -m app.cli import-google-health <folder>` (your own Fitbit / Google Health daily CSVs; keep them in the
+git-ignored `backend\data\private\` folder).
 </details>
 
 Interactive API docs are at <http://127.0.0.1:8000/docs> while the server runs.
@@ -68,8 +70,7 @@ Interactive API docs are at <http://127.0.0.1:8000/docs> while the server runs.
 
 1. **Open the seeded mission.** The app starts with the *declining-performance* crew history. To restore it,
    pick a history in the sidebar (*Declining* or *Stable*) and click **Reset mission**. The interface does not
-   badge synthetic data; the footer states that crew, mission and data are simulated, and every record still
-   carries its provenance in the database (see DATA_PROVENANCE.md).
+   label synthetic data; every record still carries its provenance in the database (see DATA_PROVENANCE.md).
 2. **Mission Overview** — fictional crew member VEGA, mission day 3/5, last EVA (7 h 00 min, day 2), next EVA,
    the five-day EVA timeline, latest assessments vs baseline, data-quality table, latest self-reported workload rating
    and next steps. A **Sleep and readiness** card shows last night's sleep score and this morning's readiness
@@ -144,6 +145,7 @@ Every row carries a provenance category.
 |---|---|---|
 | GET | `/api/mission`, `/api/overview?crew_id=` | Mission, crew, overview metrics |
 | GET | `/api/wearable/{crew_id}` | Wearable nights with sleep score and readiness (0–100) and their components |
+| POST | `/api/wearable/import-google-health` | Import your own Fitbit / Google Health daily CSVs (local participant only) |
 | GET | `/api/mission-control` | Reviewer roster: every crew member's results, sleep and readiness, workload ratings, EVA load, notes |
 | GET/POST | `/api/review-notes` | Reviewer decisions and notes (human-entered) |
 | POST | `/api/demo/load` | Reload the synthetic mission (`declining`/`stable`) |
@@ -215,7 +217,7 @@ Every row carries a provenance category.
 powershell -ExecutionPolicy Bypass -File .\test.ps1
 ```
 
-* **Backend (pytest, 64 tests):** reaction-time scoring, anticipation/false starts, interrupted/incomplete
+* **Backend (pytest, 70 tests):** reaction-time scoring, anticipation/false starts, interrupted/incomplete
   handling, motor scoring and resize invariance, equivalent-difficulty variants, baseline comparison,
   missing/insufficient baselines, zero-variance floor, robustness to outliers, invalid-session refusal,
   schedule constraints (limits, rest, qualifications, dependencies, fixed and completed tasks),

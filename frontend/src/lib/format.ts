@@ -12,6 +12,7 @@ export const CATEGORY_STYLE: Record<Category, { label: string; cls: string; dot:
 export const PROVENANCE_STYLE: Record<Provenance, { label: string; short: string; cls: string }> = {
   nasa_public_data: { label: "NASA public data", short: "NASA data", cls: "text-cyan border-cyan/40 bg-cyan-deep" },
   local_measurement: { label: "Real local measurement", short: "Real measurement", cls: "text-white border-ink bg-ink" },
+  device_data: { label: "Your wearable data", short: "Your wearable", cls: "text-white border-ink bg-ink" },
   synthetic: { label: "Synthetic demo data", short: "Synthetic", cls: "hatch text-amber border-amber/50 bg-panel" },
   published_reference: { label: "Published reference", short: "Reference", cls: "text-dim border-line bg-panel" },
   hypothetical_scenario: { label: "Hypothetical scenario", short: "Hypothetical", cls: "hatch-steel text-cyan border-cyan/40 bg-panel" },

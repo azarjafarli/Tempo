@@ -7,7 +7,7 @@ from app.seed import ensure_local_participant, gen_pvt_trials, _rng, load_demo, 
 
 
 def test_provenance_registry():
-    assert set(PROVENANCE_CATEGORIES) == {"nasa_public_data", "local_measurement", "synthetic",
+    assert set(PROVENANCE_CATEGORIES) == {"nasa_public_data", "local_measurement", "device_data", "synthetic",
                                           "published_reference", "hypothetical_scenario"}
     for r in REFERENCES:
         assert r["provenance"] in PROVENANCE_CATEGORIES
